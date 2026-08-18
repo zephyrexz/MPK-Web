@@ -204,10 +204,14 @@ def create_token(username: str) -> str:
 
 
 def require_auth(authorization: str = Header(default="")) -> dict:
-    parts = authorization.split(" ", 1)
-    if len(parts) != 2 or parts[0] != "Bearer" or not parts[1].strip():
+    parts = authorization.strip().split(" ", 1)
+    token = ""
+    if len(parts) == 2 and parts[0].lower() == "bearer":
+        token = parts[1].strip()
+    elif len(parts) == 1:
+        token = parts[0].strip()
+    if not token:
         raise HTTPException(status_code=401, detail="Token tidak ditemukan")
-    token = parts[1].strip()
     try:
         payload = jwt.decode(token, jwt_secret, algorithms=[ALGORITHM])
     except jwt.ExpiredSignatureError:
@@ -235,48 +239,82 @@ def login(data: LoginRequest):
 
 @router.get("/members", response_model=List[MemberOut])
 def list_members(db=Depends(get_db)):
-    members = db.query(Member).order_by(Member.komisi, Member.id).all()
-    for member in members:
-        if not member.komisi:
-            member.komisi = "Pengurus Inti"
-        if member.foto is None:
-            member.foto = ""
-        if member.motto is None:
-            member.motto = ""
-    return members
+    try:
+        members = db.query(Member).order_by(Member.komisi, Member.id).all()
+        for member in members:
+            if not member.komisi:
+                member.komisi = "Pengurus Inti"
+            if member.foto is None:
+                member.foto = ""
+            if member.motto is None:
+                member.motto = ""
+        return members
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (list members):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat anggota: masalah database")
+    except Exception as exc:
+        print("SERVER ERROR (list members):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat anggota: kesalahan server")
 
 
 @router.post("/members", response_model=MemberOut)
 def create_member(data: MemberCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
-    member = Member(**data.model_dump())
-    db.add(member)
-    db.commit()
-    db.refresh(member)
-    return member
+    try:
+        member = Member(**data.model_dump())
+        db.add(member)
+        db.commit()
+        db.refresh(member)
+        return member
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (create member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan anggota: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (create member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan anggota: kesalahan server")
 
 
 @router.put("/members/{member_id}", response_model=MemberOut)
 def update_member(
     member_id: int, data: MemberCreate, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
-    member = db.query(Member).filter(Member.id == member_id).first()
-    if not member:
-        raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
-    for key, value in data.model_dump().items():
-        setattr(member, key, value)
-    db.commit()
-    db.refresh(member)
-    return member
+    try:
+        member = db.query(Member).filter(Member.id == member_id).first()
+        if not member:
+            raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
+        for key, value in data.model_dump().items():
+            setattr(member, key, value)
+        db.commit()
+        db.refresh(member)
+        return member
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (update member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan anggota: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (update member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan anggota: kesalahan server")
 
 
 @router.delete("/members/{member_id}")
 def delete_member(member_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
-    member = db.query(Member).filter(Member.id == member_id).first()
-    if not member:
-        raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
-    db.delete(member)
-    db.commit()
-    return {"message": "Anggota berhasil dihapus"}
+    try:
+        member = db.query(Member).filter(Member.id == member_id).first()
+        if not member:
+            raise HTTPException(status_code=404, detail="Anggota tidak ditemukan")
+        db.delete(member)
+        db.commit()
+        return {"message": "Anggota berhasil dihapus"}
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (delete member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus anggota: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (delete member):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus anggota: kesalahan server")
 
 
 @router.get("/announcements", response_model=List[AnnouncementOut])
@@ -362,22 +400,38 @@ def delete_announcement(
 
 @router.get("/aspirasi", response_model=List[AspirasiOut])
 def list_aspirasi(db=Depends(get_db), auth: dict = Depends(require_auth)):
-    aspirasi_list = db.query(Aspirasi).order_by(Aspirasi.dibuat_pada.desc()).all()
-    for item in aspirasi_list:
-        if item.dibuat_pada is None:
-            item.dibuat_pada = datetime.now(timezone.utc)
-    return aspirasi_list
+    try:
+        aspirasi_list = db.query(Aspirasi).order_by(Aspirasi.dibuat_pada.desc()).all()
+        for item in aspirasi_list:
+            if item.dibuat_pada is None:
+                item.dibuat_pada = datetime.now(timezone.utc)
+        return aspirasi_list
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (list aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat aspirasi: masalah database")
+    except Exception as exc:
+        print("SERVER ERROR (list aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat aspirasi: kesalahan server")
 
 
 @router.post("/aspirasi", response_model=AspirasiOut)
 def create_aspirasi(data: AspirasiCreate, db=Depends(get_db)):
-    if not data.nama or not data.kelas or not data.pesan:
-        raise HTTPException(status_code=400, detail="Nama, kelas, dan pesan wajib diisi")
-    aspirasi = Aspirasi(**data.model_dump(), status="Baru")
-    db.add(aspirasi)
-    db.commit()
-    db.refresh(aspirasi)
-    return aspirasi
+    try:
+        if not data.nama or not data.kelas or not data.kategori or not data.pesan:
+            raise HTTPException(status_code=400, detail="Nama, kelas, kategori, dan pesan wajib diisi")
+        aspirasi = Aspirasi(**data.model_dump(), status="Baru")
+        db.add(aspirasi)
+        db.commit()
+        db.refresh(aspirasi)
+        return aspirasi
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (create aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal mengirim aspirasi: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (create aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal mengirim aspirasi: kesalahan server")
 
 
 @router.patch("/aspirasi/{aspirasi_id}", response_model=AspirasiOut)
@@ -387,25 +441,43 @@ def update_aspirasi_status(
     db=Depends(get_db),
     auth: dict = Depends(require_auth),
 ):
-    if data.status not in ("Baru", "Diproses", "Selesai"):
-        raise HTTPException(status_code=400, detail="Status tidak valid")
-    aspirasi = db.query(Aspirasi).filter(Aspirasi.id == aspirasi_id).first()
-    if not aspirasi:
-        raise HTTPException(status_code=404, detail="Aspirasi tidak ditemukan")
-    aspirasi.status = data.status
-    db.commit()
-    db.refresh(aspirasi)
-    return aspirasi
+    try:
+        if data.status not in ("Baru", "Diproses", "Selesai"):
+            raise HTTPException(status_code=400, detail="Status tidak valid")
+        aspirasi = db.query(Aspirasi).filter(Aspirasi.id == aspirasi_id).first()
+        if not aspirasi:
+            raise HTTPException(status_code=404, detail="Aspirasi tidak ditemukan")
+        aspirasi.status = data.status
+        db.commit()
+        db.refresh(aspirasi)
+        return aspirasi
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (update aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memperbarui aspirasi: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (update aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memperbarui aspirasi: kesalahan server")
 
 
 @router.delete("/aspirasi/{aspirasi_id}")
 def delete_aspirasi(aspirasi_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
-    aspirasi = db.query(Aspirasi).filter(Aspirasi.id == aspirasi_id).first()
-    if not aspirasi:
-        raise HTTPException(status_code=404, detail="Aspirasi tidak ditemukan")
-    db.delete(aspirasi)
-    db.commit()
-    return {"message": "Aspirasi berhasil dihapus"}
+    try:
+        aspirasi = db.query(Aspirasi).filter(Aspirasi.id == aspirasi_id).first()
+        if not aspirasi:
+            raise HTTPException(status_code=404, detail="Aspirasi tidak ditemukan")
+        db.delete(aspirasi)
+        db.commit()
+        return {"message": "Aspirasi berhasil dihapus"}
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (delete aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus aspirasi: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (delete aspirasi):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus aspirasi: kesalahan server")
 
 
 app.include_router(router, prefix="/api")
