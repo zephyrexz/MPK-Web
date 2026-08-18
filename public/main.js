@@ -1,11 +1,14 @@
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
-  var routePage = document.body.getAttribute('data-page');
-  if (routePage === 'dashboard' && !localStorage.getItem('mpk_token')) {
-    alert('Akses Ditolak! Anda harus login terlebih dahulu.');
-    window.location.href = '/portal-rahasia.html';
-    return;
+  // --- 1. ROUTE GUARD (SATPAM) ---
+  if (window.location.pathname.includes('/dashboard')) {
+    var token = localStorage.getItem('mpk_token');
+    if (!token) {
+      alert('Akses Ditolak! Anda harus login.');
+      window.location.href = '/portal-rahasia.html';
+      return;
+    }
   }
 
   var DEMO_MEMBERS = [
@@ -153,239 +156,15 @@
     return ordered;
   }
 
-  function initIndexPage() {
-    var container = document.getElementById('announcementsContainer');
-    if (!container) return;
-    try {
-      fetch('/api/announcements')
-        .then(function (res) {
-          if (!res.ok) throw new Error('Gagal memuat pengumuman');
-          return res.json();
-        })
-        .then(function (items) {
-          renderAnnouncements(items, container);
-        })
-        .catch(function () {
-          renderAnnouncements(DEMO_ANNOUNCEMENTS, container);
-        });
-    } catch (err) {
-      renderAnnouncements(DEMO_ANNOUNCEMENTS, container);
-    }
-  }
-
-  function renderAnnouncements(items, container) {
-    if (!items || !items.length) {
-      container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400"><i class="fa-solid fa-bullhorn text-4xl mb-3"></i><p class="font-semibold">Belum ada pengumuman</p><p class="text-sm">Pengumuman terbaru akan muncul di sini.</p></div>';
-      return;
-    }
-    container.innerHTML = items.map(function (a) {
-      return '' +
-        '<article class="bg-white rounded-2xl shadow-sm border border-indigo-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">' +
-          '<div class="flex items-center justify-between mb-3">' +
-            '<span class="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-calendar-days"></i>' + formatTanggal(a.tanggal) + '</span>' +
-            (a.penting ? '<span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-rose-500 px-3 py-1.5 rounded-full"><i class="fa-solid fa-circle-exclamation"></i>Penting</span>' : '') +
-          '</div>' +
-          '<h3 class="font-extrabold text-lg text-slate-900 mb-2">' + escapeHtml(a.judul) + '</h3>' +
-          '<p class="text-sm text-slate-600 leading-relaxed">' + escapeHtml(a.isi) + '</p>' +
-        '</article>';
-    }).join('');
-  }
-
-  function initStrukturPage() {
-    var container = document.getElementById('strukturContainer');
-    if (!container) return;
-    try {
-      fetch('/api/members')
-        .then(function (res) {
-          if (!res.ok) throw new Error('Gagal memuat anggota');
-          return res.json();
-        })
-        .then(function (members) {
-          renderStruktur(members, container);
-        })
-        .catch(function () {
-          renderStruktur(DEMO_MEMBERS, container);
-        });
-    } catch (err) {
-      renderStruktur(DEMO_MEMBERS, container);
-    }
-  }
-
-  function renderStruktur(members, container) {
-    var groups = groupByKomisi(members);
-    if (!groups.length) {
-      container.innerHTML = '<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-users-slash text-4xl mb-3"></i><p class="font-semibold">Data anggota belum tersedia.</p></div>';
-      return;
-    }
-    container.innerHTML = groups.map(function (group, gi) {
-      var desc = KOMISI_INFO[group.komisi] || '';
-      var cards = group.anggota.map(function (m, mi) {
-        var g = AVATAR_GRADIENTS[(gi + mi) % AVATAR_GRADIENTS.length];
-        return '' +
-          '<a href="/profile.html?id=' + m.id + '" class="group bg-white rounded-2xl border border-indigo-100 shadow-sm p-5 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-300 transition-all duration-300 block">' +
-            '<div class="flex items-center gap-4">' +
-              '<div class="w-14 h-14 rounded-full bg-gradient-to-br ' + g + ' text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-md group-hover:scale-110 transition-transform">' + initials(m.nama) + '</div>' +
-              '<div class="min-w-0">' +
-                '<h3 class="font-extrabold text-slate-900 truncate">' + escapeHtml(m.nama) + '</h3>' +
-                '<p class="text-indigo-600 text-sm font-semibold">' + escapeHtml(m.jabatan) + '</p>' +
-                '<p class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-school mr-1"></i>Kelas ' + escapeHtml(m.kelas) + '</p>' +
-              '</div>' +
-            '</div>' +
-            (m.motto ? '<p class="mt-3 text-xs italic text-slate-500 border-t border-slate-100 pt-3">"' + escapeHtml(m.motto) + '"</p>' : '') +
-          '</a>';
-      }).join('');
-      return '' +
-        '<section class="mb-12">' +
-          '<div class="flex items-center gap-3 mb-6">' +
-            '<div class="w-11 h-11 rounded-xl bg-gradient-to-br ' + AVATAR_GRADIENTS[gi % AVATAR_GRADIENTS.length] + ' text-white flex items-center justify-center shadow-lg"><i class="fa-solid ' + komisiIcon(group.komisi) + '"></i></div>' +
-            '<div>' +
-              '<h2 class="text-xl font-black text-slate-900">' + escapeHtml(group.komisi) + '</h2>' +
-              (desc ? '<p class="text-sm text-slate-500">' + escapeHtml(desc) + '</p>' : '') +
-            '</div>' +
-            '<span class="ml-auto text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">' + group.anggota.length + ' Anggota</span>' +
-          '</div>' +
-          '<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">' + cards + '</div>' +
-        '</section>';
-    }).join('');
-  }
-
-  function initAspirasiPage() {
-    var form = document.getElementById('aspirasiForm');
-    var successBox = document.getElementById('aspirasiSuccess');
-    var errorBox = document.getElementById('aspirasiError');
-    var submitBtn = document.getElementById('aspirasiSubmit');
-    if (!form) return;
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      errorBox.classList.add('hidden');
-      var nama = document.getElementById('aspirasiNama').value.trim();
-      var kelas = document.getElementById('aspirasiKelas').value.trim();
-      var kategori = document.getElementById('aspirasiKategori').value;
-      var pesan = document.getElementById('aspirasiPesan').value.trim();
-      var anonim = document.getElementById('aspirasiAnonim').checked;
-
-      if (!kelas || !pesan) {
-        errorBox.classList.remove('hidden');
-        errorBox.textContent = 'Mohon isi kelas dan pesan aspirasi kamu.';
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim...';
-
-      var payload = {
-        nama: anonim ? 'Anonim' : (nama || 'Anonim'),
-        kelas: kelas,
-        kategori: kategori,
-        pesan: pesan
-      };
-
-      try {
-        fetch('/api/aspirasi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        })
-          .then(function (res) {
-            if (!res.ok) throw new Error('Gagal mengirim');
-            return res.json();
-          })
-          .then(function () {
-            form.reset();
-            successBox.classList.remove('hidden');
-            successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          })
-          .catch(function () {
-            errorBox.classList.remove('hidden');
-            errorBox.textContent = 'Terjadi kesalahan koneksi. Coba lagi beberapa saat.';
-          })
-          .finally(function () {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
-          });
-      } catch (err) {
-        errorBox.classList.remove('hidden');
-        errorBox.textContent = 'Terjadi kesalahan. Coba lagi.';
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
-      }
-    });
-  }
-
-  function initProfilePage() {
-    var card = document.getElementById('idCard');
-    var errorBox = document.getElementById('profileError');
-    var params = new URLSearchParams(window.location.search);
-    var id = params.get('id');
-    if (!id) {
-      errorBox.classList.remove('hidden');
-      card.classList.add('hidden');
-      return;
-    }
-    var render = function (members) {
-      var member = null;
-      members.forEach(function (m) {
-        if (String(m.id) === String(id)) member = m;
-      });
-      if (!member) {
-        errorBox.classList.remove('hidden');
-        card.classList.add('hidden');
-        return;
-      }
-      renderIdCard(member, card);
-    };
-    try {
-      fetch('/api/members')
-        .then(function (res) {
-          if (!res.ok) throw new Error('Gagal memuat anggota');
-          return res.json();
-        })
-        .then(render)
-        .catch(function () {
-          render(DEMO_MEMBERS);
-        });
-    } catch (err) {
-      render(DEMO_MEMBERS);
-    }
-  }
-
-  function renderIdCard(m, card) {
-    var g = AVATAR_GRADIENTS[komisiIndex(m.komisi) % AVATAR_GRADIENTS.length];
-    var photo = m.foto
-      ? '<img src="' + escapeHtml(m.foto) + '" alt="Foto ' + escapeHtml(m.nama) + '" class="w-full h-full object-cover">'
-      : '<span class="text-4xl font-black text-white">' + initials(m.nama) + '</span>';
-    card.innerHTML = '' +
-      '<div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-indigo-100 max-w-sm mx-auto">' +
-        '<div class="h-32 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 relative">' +
-          '<div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(45deg, #ffffff 0, #ffffff 2px, transparent 2px, transparent 12px);"></div>' +
-          '<p class="absolute top-4 left-5 text-white font-extrabold text-sm tracking-wide">MPK SMPN 1 NUSANTARA</p>' +
-          '<p class="absolute top-4 right-5 text-white text-xs font-semibold bg-white/20 rounded-full px-3 py-1">ID: MPK-2026-' + String(m.id).padStart(3, '0') + '</p>' +
-        '</div>' +
-        '<div class="px-6 pb-8 -mt-14 text-center">' +
-          '<div class="w-28 h-28 mx-auto rounded-2xl bg-gradient-to-br ' + g + ' flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">' + photo + '</div>' +
-          '<h2 class="mt-4 text-2xl font-black text-slate-900">' + escapeHtml(m.nama) + '</h2>' +
-          '<p class="text-indigo-600 font-bold">' + escapeHtml(m.jabatan) + '</p>' +
-          '<div class="flex justify-center gap-2 mt-3 flex-wrap">' +
-            '<span class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-school"></i>Kelas ' + escapeHtml(m.kelas) + '</span>' +
-            '<span class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-users"></i>' + escapeHtml(m.komisi) + '</span>' +
-          '</div>' +
-          (m.motto ? '<p class="mt-4 text-sm italic text-slate-500">"' + escapeHtml(m.motto) + '"</p>' : '') +
-          '<div class="mt-6 pt-4 border-t border-dashed border-slate-200 text-xs text-slate-400">Kartu Anggota Digital MPK • Periode 2026/2027</div>' +
-        '</div>' +
-      '</div>';
-  }
-
-  function initLoginPage() {
-    var form = document.getElementById('loginForm');
-    var errorBox = document.getElementById('loginError');
-    var errorText = document.getElementById('loginErrorText');
-    var submitBtn = document.getElementById('loginBtn');
-    if (!form) return;
-
-    form.addEventListener('submit', function (e) {
+  // --- 2. LOGIN LOGIC ---
+  var loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
 
+      var errorBox = document.getElementById('loginError');
+      var errorText = document.getElementById('loginErrorText');
+      var submitBtn = document.getElementById('loginBtn');
       var username = document.getElementById('loginUsername').value.trim();
       var password = document.getElementById('loginPassword').value;
       errorBox.classList.add('hidden');
@@ -444,14 +223,7 @@
     });
   }
 
-  function initDashboardPage() {
-    initTabs();
-    bindAdminForms();
-    loadAspirasiAdmin();
-    loadAnnouncementsAdmin();
-    loadMembersAdmin();
-  }
-
+  // --- 3. DASHBOARD TABS LOGIC ---
   function initTabs() {
     var tabs = document.querySelectorAll('[data-tab]');
     var panels = document.querySelectorAll('[data-panel]');
@@ -476,6 +248,14 @@
         });
       });
     });
+  }
+
+  function initDashboardPage() {
+    initTabs();
+    bindAdminForms();
+    loadAspirasiAdmin();
+    loadAnnouncementsAdmin();
+    loadMembersAdmin();
   }
 
   function bindAdminForms() {
@@ -946,14 +726,235 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    setActiveNav();
-    var page = document.body.getAttribute('data-page');
-    if (page === 'index') initIndexPage();
-    if (page === 'struktur') initStrukturPage();
-    if (page === 'aspirasi') initAspirasiPage();
-    if (page === 'profile') initProfilePage();
-    if (page === 'portal') initLoginPage();
-    if (page === 'dashboard') initDashboardPage();
-  });
-})();
+  function initIndexPage() {
+    var container = document.getElementById('announcementsContainer');
+    if (!container) return;
+    try {
+      fetch('/api/announcements')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Gagal memuat pengumuman');
+          return res.json();
+        })
+        .then(function (items) {
+          renderAnnouncements(items, container);
+        })
+        .catch(function () {
+          renderAnnouncements(DEMO_ANNOUNCEMENTS, container);
+        });
+    } catch (err) {
+      renderAnnouncements(DEMO_ANNOUNCEMENTS, container);
+    }
+  }
+
+  function renderAnnouncements(items, container) {
+    if (!items || !items.length) {
+      container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400"><i class="fa-solid fa-bullhorn text-4xl mb-3"></i><p class="font-semibold">Belum ada pengumuman</p><p class="text-sm">Pengumuman terbaru akan muncul di sini.</p></div>';
+      return;
+    }
+    container.innerHTML = items.map(function (a) {
+      return '' +
+        '<article class="bg-white rounded-2xl shadow-sm border border-indigo-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">' +
+          '<div class="flex items-center justify-between mb-3">' +
+            '<span class="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-calendar-days"></i>' + formatTanggal(a.tanggal) + '</span>' +
+            (a.penting ? '<span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-rose-500 px-3 py-1.5 rounded-full"><i class="fa-solid fa-circle-exclamation"></i>Penting</span>' : '') +
+          '</div>' +
+          '<h3 class="font-extrabold text-lg text-slate-900 mb-2">' + escapeHtml(a.judul) + '</h3>' +
+          '<p class="text-sm text-slate-600 leading-relaxed">' + escapeHtml(a.isi) + '</p>' +
+        '</article>';
+    }).join('');
+  }
+
+  function initStrukturPage() {
+    var container = document.getElementById('strukturContainer');
+    if (!container) return;
+    try {
+      fetch('/api/members')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Gagal memuat anggota');
+          return res.json();
+        })
+        .then(function (members) {
+          renderStruktur(members, container);
+        })
+        .catch(function () {
+          renderStruktur(DEMO_MEMBERS, container);
+        });
+    } catch (err) {
+      renderStruktur(DEMO_MEMBERS, container);
+    }
+  }
+
+  function renderStruktur(members, container) {
+    var groups = groupByKomisi(members);
+    if (!groups.length) {
+      container.innerHTML = '<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-users-slash text-4xl mb-3"></i><p class="font-semibold">Data anggota belum tersedia.</p></div>';
+      return;
+    }
+    container.innerHTML = groups.map(function (group, gi) {
+      var desc = KOMISI_INFO[group.komisi] || '';
+      var cards = group.anggota.map(function (m, mi) {
+        var g = AVATAR_GRADIENTS[(gi + mi) % AVATAR_GRADIENTS.length];
+        return '' +
+          '<a href="/profile.html?id=' + m.id + '" class="group bg-white rounded-2xl border border-indigo-100 shadow-sm p-5 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-300 transition-all duration-300 block">' +
+            '<div class="flex items-center gap-4">' +
+              '<div class="w-14 h-14 rounded-full bg-gradient-to-br ' + g + ' text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-md group-hover:scale-110 transition-transform">' + initials(m.nama) + '</div>' +
+              '<div class="min-w-0">' +
+                '<h3 class="font-extrabold text-slate-900 truncate">' + escapeHtml(m.nama) + '</h3>' +
+                '<p class="text-indigo-600 text-sm font-semibold">' + escapeHtml(m.jabatan) + '</p>' +
+                '<p class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-school mr-1"></i>Kelas ' + escapeHtml(m.kelas) + '</p>' +
+              '</div>' +
+            '</div>' +
+            (m.motto ? '<p class="mt-3 text-xs italic text-slate-500 border-t border-slate-100 pt-3">"' + escapeHtml(m.motto) + '"</p>' : '') +
+          '</a>';
+      }).join('');
+      return '' +
+        '<section class="mb-12">' +
+          '<div class="flex items-center gap-3 mb-6">' +
+            '<div class="w-11 h-11 rounded-xl bg-gradient-to-br ' + AVATAR_GRADIENTS[gi % AVATAR_GRADIENTS.length] + ' text-white flex items-center justify-center shadow-lg"><i class="fa-solid ' + komisiIcon(group.komisi) + '"></i></div>' +
+            '<div>' +
+              '<h2 class="text-xl font-black text-slate-900">' + escapeHtml(group.komisi) + '</h2>' +
+              (desc ? '<p class="text-sm text-slate-500">' + escapeHtml(desc) + '</p>' : '') +
+            '</div>' +
+            '<span class="ml-auto text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">' + group.anggota.length + ' Anggota</span>' +
+          '</div>' +
+          '<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">' + cards + '</div>' +
+        '</section>';
+    }).join('');
+  }
+
+  function initAspirasiPage() {
+    var form = document.getElementById('aspirasiForm');
+    var successBox = document.getElementById('aspirasiSuccess');
+    var errorBox = document.getElementById('aspirasiError');
+    var submitBtn = document.getElementById('aspirasiSubmit');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorBox.classList.add('hidden');
+      var nama = document.getElementById('aspirasiNama').value.trim();
+      var kelas = document.getElementById('aspirasiKelas').value.trim();
+      var kategori = document.getElementById('aspirasiKategori').value;
+      var pesan = document.getElementById('aspirasiPesan').value.trim();
+      var anonim = document.getElementById('aspirasiAnonim').checked;
+
+      if (!kelas || !pesan) {
+        errorBox.classList.remove('hidden');
+        errorBox.textContent = 'Mohon isi kelas dan pesan aspirasi kamu.';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim...';
+
+      var payload = {
+        nama: anonim ? 'Anonim' : (nama || 'Anonim'),
+        kelas: kelas,
+        kategori: kategori,
+        pesan: pesan
+      };
+
+      try {
+        fetch('/api/aspirasi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Gagal mengirim');
+            return res.json();
+          })
+          .then(function () {
+            form.reset();
+            successBox.classList.remove('hidden');
+            successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          })
+          .catch(function () {
+            errorBox.classList.remove('hidden');
+            errorBox.textContent = 'Terjadi kesalahan koneksi. Coba lagi beberapa saat.';
+          })
+          .finally(function () {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
+          });
+      } catch (err) {
+        errorBox.classList.remove('hidden');
+        errorBox.textContent = 'Terjadi kesalahan. Coba lagi.';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
+      }
+    });
+  }
+
+  function initProfilePage() {
+    var card = document.getElementById('idCard');
+    var errorBox = document.getElementById('profileError');
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    if (!id) {
+      errorBox.classList.remove('hidden');
+      card.classList.add('hidden');
+      return;
+    }
+    var render = function (members) {
+      var member = null;
+      members.forEach(function (m) {
+        if (String(m.id) === String(id)) member = m;
+      });
+      if (!member) {
+        errorBox.classList.remove('hidden');
+        card.classList.add('hidden');
+        return;
+      }
+      renderIdCard(member, card);
+    };
+    try {
+      fetch('/api/members')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Gagal memuat anggota');
+          return res.json();
+        })
+        .then(render)
+        .catch(function () {
+          render(DEMO_MEMBERS);
+        });
+    } catch (err) {
+      render(DEMO_MEMBERS);
+    }
+  }
+
+  function renderIdCard(m, card) {
+    var g = AVATAR_GRADIENTS[komisiIndex(m.komisi) % AVATAR_GRADIENTS.length];
+    var photo = m.foto
+      ? '<img src="' + escapeHtml(m.foto) + '" alt="Foto ' + escapeHtml(m.nama) + '" class="w-full h-full object-cover">'
+      : '<span class="text-4xl font-black text-white">' + initials(m.nama) + '</span>';
+    card.innerHTML = '' +
+      '<div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-indigo-100 max-w-sm mx-auto">' +
+        '<div class="h-32 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 relative">' +
+          '<div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(45deg, #ffffff 0, #ffffff 2px, transparent 2px, transparent 12px);"></div>' +
+          '<p class="absolute top-4 left-5 text-white font-extrabold text-sm tracking-wide">MPK SMPN 1 NUSANTARA</p>' +
+          '<p class="absolute top-4 right-5 text-white text-xs font-semibold bg-white/20 rounded-full px-3 py-1">ID: MPK-2026-' + String(m.id).padStart(3, '0') + '</p>' +
+        '</div>' +
+        '<div class="px-6 pb-8 -mt-14 text-center">' +
+          '<div class="w-28 h-28 mx-auto rounded-2xl bg-gradient-to-br ' + g + ' flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">' + photo + '</div>' +
+          '<h2 class="mt-4 text-2xl font-black text-slate-900">' + escapeHtml(m.nama) + '</h2>' +
+          '<p class="text-indigo-600 font-bold">' + escapeHtml(m.jabatan) + '</p>' +
+          '<div class="flex justify-center gap-2 mt-3 flex-wrap">' +
+            '<span class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-school"></i>Kelas ' + escapeHtml(m.kelas) + '</span>' +
+            '<span class="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full"><i class="fa-solid fa-users"></i>' + escapeHtml(m.komisi) + '</span>' +
+          '</div>' +
+          (m.motto ? '<p class="mt-4 text-sm italic text-slate-500">"' + escapeHtml(m.motto) + '"</p>' : '') +
+          '<div class="mt-6 pt-4 border-t border-dashed border-slate-200 text-xs text-slate-400">Kartu Anggota Digital MPK • Periode 2026/2027</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // --- 4. PAGE INITIALIZATION ---
+  setActiveNav();
+  var page = document.body.getAttribute('data-page');
+  if (page === 'index') initIndexPage();
+  if (page === 'struktur') initStrukturPage();
+  if (page === 'aspirasi') initAspirasiPage();
+  if (page === 'profile') initProfilePage();
+  if (page === 'dashboard') initDashboardPage();
+});
