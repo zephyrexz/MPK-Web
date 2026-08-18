@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/main.py" },
-    { "source": "/docs", "destination": "/api/main.py" },
-    { "source": "/redoc", "destination": "/api/main.py" },
-    { "source": "/((?!api/).*)", "destination": "/public/$1" }
-  ]
+
 }
