@@ -178,24 +178,46 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var LOGO_URL_CACHE = null;
+  var LOGO_CACHE_KEY = 'mpk_logo_cache_url';
+
+  function readLogoCache() {
+    try { return localStorage.getItem(LOGO_CACHE_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  function writeLogoCache(url) {
+    try { localStorage.setItem(LOGO_CACHE_KEY, url || ''); } catch (e) {}
+  }
 
   function loadLogoURL(cb) {
     if (LOGO_URL_CACHE !== null) {
       cb(LOGO_URL_CACHE);
       return;
     }
+    LOGO_URL_CACHE = readLogoCache();
+    cb(LOGO_URL_CACHE);
     try {
       fetch(API_BASE + '/settings')
         .then(function (res) { return res.ok ? res.json() : {}; })
         .then(function (s) {
-          LOGO_URL_CACHE = (s && s.logo_url) ? String(s.logo_url).trim() : '';
-          cb(LOGO_URL_CACHE);
+          var url = (s && s.logo_url) ? String(s.logo_url).trim() : '';
+          LOGO_URL_CACHE = url;
+          writeLogoCache(url);
+          cb(url);
         })
         .catch(function () { LOGO_URL_CACHE = ''; cb(''); });
     } catch (err) {
       LOGO_URL_CACHE = '';
       cb('');
     }
+  }
+
+  function logoSlotSize(slot, fallback) {
+    var child = slot.querySelector('div[class]');
+    if (child) {
+      var m = String(child.className).match(/(?:^|\s)(w-\d+ h-\d+)(?:\s|$)/);
+      if (m) return m[1];
+    }
+    return fallback || 'w-9 h-9';
   }
 
   function logoFallbackHtml(size) {
@@ -205,12 +227,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function fillLogoSlot(slot, url, size) {
     size = size || 'w-9 h-9';
+    var img = slot.querySelector('[data-logo-img]');
     if (!url) {
-      slot.innerHTML = logoFallbackHtml(size);
+      if (img) {
+        slot.innerHTML = logoFallbackHtml(size);
+      } else if (!slot.querySelector('.fa-graduation-cap')) {
+        slot.innerHTML = logoFallbackHtml(size);
+      }
       return;
     }
-    slot.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" data-logo-img class="' + size + ' object-contain bg-transparent drop-shadow-sm opacity-0 transition-opacity duration-300">';
-    var img = slot.querySelector('[data-logo-img]');
+    if (img) {
+      if (img.getAttribute('src') !== url) {
+        img.classList.add('opacity-0');
+        img.setAttribute('src', url);
+        img.onload = function () { img.classList.remove('opacity-0'); };
+        img.onerror = function () { slot.innerHTML = logoFallbackHtml(size); };
+      }
+      return;
+    }
+    slot.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" data-logo-img class="' + size + ' rounded-xl object-contain bg-transparent drop-shadow-sm opacity-0 transition-opacity duration-300">';
+    img = slot.querySelector('[data-logo-img]');
     img.onload = function () {
       img.classList.remove('opacity-0');
     };
@@ -222,9 +258,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function applyLogo() {
     var slots = document.querySelectorAll('[data-logo-slot]');
     if (!slots.length) return;
+    slots.forEach(function (slot) {
+      if (!slot.querySelector('[data-logo-img]')) {
+        slot.innerHTML = '<div class="' + logoSlotSize(slot) + '"></div>';
+      }
+    });
     loadLogoURL(function (url) {
       slots.forEach(function (slot) {
-        fillLogoSlot(slot, url);
+        fillLogoSlot(slot, url, logoSlotSize(slot));
       });
     });
   }
@@ -311,7 +352,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function handleUnauthorized() {
     clearToken();
+    sessionClear();
     window.location.href = '/portal-rahasia.html';
+  }
+
+  // --- SESSION TIMEOUT (GRACE 60 DETIK) ---
+  var SESSION_KEY = 'mpk_last_seen';
+  var SESSION_GRACE_MS = 60000;
+
+  function sessionGet() {
+    try { return parseInt(localStorage.getItem(SESSION_KEY), 10) || 0; } catch (e) { return 0; }
+  }
+
+  function sessionSet(ts) {
+    try { localStorage.setItem(SESSION_KEY, String(ts)); } catch (e) {}
+  }
+
+  function sessionClear() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  }
+
+  function recordSessionActivity() {
+    sessionSet(Date.now());
+  }
+
+  function checkSessionTimeout() {
+    if (document.body.getAttribute('data-page') !== 'dashboard') return;
+    if (!getToken()) return;
+    var last = sessionGet();
+    if (last && (Date.now() - last) > SESSION_GRACE_MS) {
+      clearToken();
+      sessionClear();
+      alert('Sesi Anda telah berakhir. Silakan login kembali.');
+      window.location.href = '/portal-rahasia.html';
+      return;
+    }
+    recordSessionActivity();
+  }
+
+  function initSessionTracking() {
+    if (document.body.getAttribute('data-page') !== 'dashboard') return;
+    window.addEventListener('pagehide', recordSessionActivity);
+    window.addEventListener('beforeunload', recordSessionActivity);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') recordSessionActivity();
+      else checkSessionTimeout();
+    });
+    window.addEventListener('focus', checkSessionTimeout);
+    checkSessionTimeout();
   }
 
   function groupByKomisi(members) {
@@ -369,6 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
           })
           .then(function (data) {
             localStorage.setItem('mpk_token', data.token);
+            recordSessionActivity();
             window.location.href = '/dashboard.html';
           })
           .catch(function (err) {
@@ -544,6 +633,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function () {
         clearToken();
+        sessionClear();
         window.location.href = '/portal-rahasia.html';
       });
     }
@@ -1299,8 +1389,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (logoBox) {
       loadLogoURL(function (url) {
         if (url) {
-          logoBox.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" class="w-40 h-40 object-contain bg-transparent drop-shadow-lg mx-auto">';
-        } else {
+          var cur = logoBox.querySelector('img');
+          if (cur && cur.getAttribute('src') === url) return;
+          logoBox.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" class="w-40 h-40 object-contain bg-transparent drop-shadow-lg mx-auto opacity-0 transition-opacity duration-300">';
+          var img = logoBox.querySelector('img');
+          img.onload = function () { img.classList.remove('opacity-0'); };
+          img.onerror = function () { logoBox.innerHTML = logoFallbackHtml('w-40 h-40'); };
+        } else if (!logoBox.querySelector('img')) {
           logoBox.innerHTML = logoFallbackHtml('w-40 h-40');
         }
       });
@@ -1839,6 +1934,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setActiveNav();
   applyLogo();
   initMobileMenu();
+  initSessionTracking();
   var page = document.body.getAttribute('data-page');
   if (page === 'index') initIndexPage();
   if (page === 'struktur') initStrukturPage();
