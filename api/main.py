@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 import jwt
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,18 +11,36 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+load_dotenv()
+
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:mpk%402026hebat@db.ajitvosbvdccuxpbfadr.supabase.co:5432/postgres",
+    "postgresql://postgres:mpk%402026hebat@db.xzbegmhfvscirqeujbvs.supabase.co:5432/postgres",
 )
-JWT_SECRET = os.getenv("JWT_SECRET", "V++9OqCkNjnCKlZli2WD+2vF+NPyTeAswOBU1mx38weGl+40SfpCHqUIo2wcMp6CuMOq9c7KAUeK1UQqfdpVNw==")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRES_HOURS = 12
+jwt_secret = os.getenv("JWT_SECRET", "4f92b7c8a1e3d6f59028cb4719a6e5b32f8d1c9a4e7b0f2c5d8e1a3b6f9c2d4e")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 720
 ADMIN_USERNAME = "admin_mpk"
 ADMIN_PASSWORD = "SecurePassword123"
 
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = None
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+    "pool_size": 5,
+    "max_overflow": 5,
+}
+if DATABASE_URL.startswith("postgres"):
+    engine_kwargs["connect_args"] = {"connect_timeout": 10, "sslmode": "require"}
+try:
+    engine = create_engine(DATABASE_URL, **engine_kwargs)
+except Exception as exc:
+    print("WARNING: Tidak dapat membuat database engine:", exc)
+
+if engine is not None:
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+else:
+    SessionLocal = None
 Base = declarative_base()
 
 
@@ -56,7 +75,12 @@ class Aspirasi(Base):
     dibuat_pada = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
-Base.metadata.create_all(bind=engine)
+try:
+    if engine is not None:
+        Base.metadata.create_all(bind=engine)
+        print("Tabel database siap: members, announcements, aspirasi")
+except Exception as exc:
+    print("WARNING: Tidak dapat membuat tabel database:", exc)
 
 
 class LoginRequest(BaseModel):
@@ -120,6 +144,8 @@ app.add_middleware(
 
 
 def get_db():
+    if SessionLocal is None:
+        raise HTTPException(status_code=503, detail="Database tidak tersedia")
     db = SessionLocal()
     try:
         yield db
@@ -130,9 +156,9 @@ def get_db():
 def create_token(username: str) -> str:
     payload = {
         "sub": username,
-        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRES_HOURS),
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(payload, jwt_secret, algorithm=ALGORITHM)
 
 
 def require_auth(authorization: str = Header(default="")) -> dict:
@@ -140,7 +166,7 @@ def require_auth(authorization: str = Header(default="")) -> dict:
         raise HTTPException(status_code=401, detail="Token tidak ditemukan")
     token = authorization.split(" ", 1)[1]
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, jwt_secret, algorithms=[ALGORITHM])
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token kedaluwarsa")
     except jwt.InvalidTokenError:
