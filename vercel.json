@@ -6,6 +6,7 @@
     { "source": "/redoc", "destination": "/api/main.py" },
     { "source": "/portal-rahasia", "destination": "/public/portal-rahasia.html" },
     { "source": "/dashboard", "destination": "/public/dashboard.html" },
-    { "source": "/((?!api/|docs|redoc).*)", "destination": "/public/$1" }
+    { "source": "/struktur", "destination": "/public/struktur.html" },
+    { "source": "/aspirasi", "destination": "/public/aspirasi.html" }
   ]
 }
