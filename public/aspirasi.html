@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sampaikan Aspirasi - MPK SMPN 1 Nusantara</title>
+  <meta name="description" content="Saluran aspirasi digital MPK SMPN 1 Nusantara. Sampaikan saran, kritik, dan idemu.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+  </script>
+  <style>
+    .fade-up { animation: fadeUp .7s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #eef2ff; }
+    ::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased" data-page="aspirasi">
+
+  <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-indigo-100">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="leading-tight">
+          <p class="font-black text-indigo-600">MPK</p>
+          <p class="text-[11px] font-semibold text-slate-500">SMPN 1 Nusantara</p>
+        </div>
+      </a>
+      <div class="hidden md:flex items-center gap-7 font-semibold text-sm text-slate-600">
+        <a href="/" data-nav="index" class="hover:text-indigo-600 transition">Beranda</a>
+        <a href="/struktur" data-nav="struktur" class="hover:text-indigo-600 transition">Struktur</a>
+        <a href="/aspirasi" data-nav="aspirasi" class="hover:text-indigo-600 transition">Aspirasi</a>
+        <a href="/aspirasi" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-500/30"><i class="fa-solid fa-bullhorn"></i>Sampaikan Aspirasi</a>
+      </div>
+      <a href="/aspirasi" class="md:hidden w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-bullhorn"></i></a>
+    </div>
+  </nav>
+
+  <header class="bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-16 md:py-20 text-center">
+      <span class="inline-flex items-center gap-2 text-xs font-bold bg-white/15 backdrop-blur border border-white/25 px-4 py-2 rounded-full"><i class="fa-solid fa-envelope-open-text"></i>Saluran Aspirasi</span>
+      <h1 class="mt-5 text-3xl md:text-5xl font-black">Suara Kamu Didengar</h1>
+      <p class="mt-4 text-indigo-100 max-w-xl mx-auto">Isi form di bawah dengan sopan dan jelas. Aspirasi kamu akan dibaca langsung oleh pengurus inti MPK.</p>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-12 md:py-16">
+    <div class="grid md:grid-cols-3 gap-5 mb-12">
+      <div class="bg-white rounded-2xl border border-indigo-100 shadow-sm p-6 hover:shadow-lg transition">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center mb-4"><i class="fa-solid fa-lightbulb"></i></div>
+        <h3 class="font-black text-slate-900">Ide & Saran</h3>
+        <p class="mt-2 text-sm text-slate-500 leading-relaxed">Punya ide kegiatan, program, atau perbaikan fasilitas sekolah? Sampaikan di sini.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-indigo-100 shadow-sm p-6 hover:shadow-lg transition">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white flex items-center justify-center mb-4"><i class="fa-solid fa-circle-exclamation"></i></div>
+        <h3 class="font-black text-slate-900">Kritik & Keluhan</h3>
+        <p class="mt-2 text-sm text-slate-500 leading-relaxed">Ada masalah di sekolah yang perlu diperbaiki? Ceritakan dengan jujur dan sopan.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-indigo-100 shadow-sm p-6 hover:shadow-lg transition">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center mb-4"><i class="fa-solid fa-shield-heart"></i></div>
+        <h3 class="font-black text-slate-900">Jaminan Rahasia</h3>
+        <p class="mt-2 text-sm text-slate-500 leading-relaxed">Identitas kamu dijaga kerahasiaannya oleh pengurus MPK. Bisa juga kirim anonim.</p>
+      </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto">
+      <div id="aspirasiSuccess" class="hidden mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-2xl p-6 flex items-start gap-4">
+        <div class="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0"><i class="fa-solid fa-check"></i></div>
+        <div>
+          <p class="font-black">Aspirasi Terkirim!</p>
+          <p class="text-sm mt-1">Terima kasih sudah berani bersuara. Aspirasi kamu sedang dibaca oleh pengurus inti MPK.</p>
+        </div>
+      </div>
+
+      <div id="aspirasiError" class="hidden mb-6 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 text-sm font-semibold flex items-center gap-3">
+        <i class="fa-solid fa-circle-exclamation"></i><span></span>
+      </div>
+
+      <form id="aspirasiForm" class="bg-white rounded-3xl border border-indigo-100 shadow-xl shadow-indigo-100/50 p-8 md:p-10">
+        <h2 class="text-2xl font-black text-slate-900 mb-8">Form Aspirasi Siswa</h2>
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label for="aspirasiNama" class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-user mr-1.5 text-indigo-500"></i>Nama Lengkap</label>
+            <input id="aspirasiNama" type="text" placeholder="contoh: Budi Santoso" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+          </div>
+          <div>
+            <label for="aspirasiKelas" class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-school mr-1.5 text-indigo-500"></i>Kelas <span class="text-rose-500">*</span></label>
+            <input id="aspirasiKelas" type="text" placeholder="contoh: 8B" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+          </div>
+        </div>
+        <div class="mb-6">
+          <label for="aspirasiKategori" class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tag mr-1.5 text-indigo-500"></i>Kategori <span class="text-rose-500">*</span></label>
+          <select id="aspirasiKategori" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <option value="Saran">Saran</option>
+            <option value="Keluhan">Keluhan</option>
+            <option value="Ide">Ide</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="mb-6">
+          <label for="aspirasiPesan" class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-pen mr-1.5 text-indigo-500"></i>Pesan Aspirasi <span class="text-rose-500">*</span></label>
+          <textarea id="aspirasiPesan" rows="6" placeholder="Tuliskan aspirasi kamu dengan jelas dan sopan..." class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+        </div>
+        <label class="flex items-center gap-3 mb-8 cursor-pointer select-none">
+          <input id="aspirasiAnonim" type="checkbox" class="w-5 h-5 rounded accent-indigo-600">
+          <span class="text-sm text-slate-600"><i class="fa-solid fa-user-secret mr-1.5 text-indigo-500"></i>Kirim secara anonim (nama tidak ditampilkan)</span>
+        </label>
+        <button id="aspirasiSubmit" type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-4 rounded-2xl hover:from-indigo-700 hover:to-purple-700 hover:-translate-y-0.5 transition shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi
+        </button>
+        <p class="mt-4 text-center text-xs text-slate-400"><i class="fa-solid fa-shield-halved mr-1"></i>Data kamu aman dan hanya dibaca oleh pengurus inti MPK.</p>
+      </form>
+    </div>
+  </main>
+
+  <footer class="bg-slate-900 text-slate-300">
+    <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-10">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="leading-tight">
+            <p class="font-black text-white">MPK</p>
+            <p class="text-[11px] font-semibold text-slate-400">SMPN 1 Nusantara</p>
+          </div>
+        </div>
+        <p class="mt-4 text-sm text-slate-400 leading-relaxed">Majelis Perwakilan Kelas, wadah aspirasi siswa. Dibuat oleh siswa, untuk siswa.</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-4">Tautan</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="/" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Beranda</a></li>
+          <li><a href="/struktur" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Struktur Organisasi</a></li>
+          <li><a href="/aspirasi" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Saluran Aspirasi</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-4">Kontak</h4>
+        <ul class="space-y-2.5 text-sm text-slate-400">
+          <li><i class="fa-solid fa-envelope mr-2 text-indigo-400"></i>mpk@smpn1nusantara.sch.id</li>
+          <li><i class="fa-solid fa-location-dot mr-2 text-indigo-400"></i>Jl. Pendidikan No. 1, Nusantara</li>
+          <li><i class="fa-brands fa-instagram mr-2 text-indigo-400"></i>@mpk.smpn1nusantara</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-5 text-center text-xs text-slate-500">© 2026 MPK SMPN 1 Nusantara. Berani bicara, berani bertanggung jawab.</div>
+    </div>
+  </footer>
+
+  <script src="/main.js"></script>
+</body>
+</html>

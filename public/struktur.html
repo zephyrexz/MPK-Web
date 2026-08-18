@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Struktur MPK - SMPN 1 Nusantara</title>
+  <meta name="description" content="Struktur organisasi Majelis Perwakilan Kelas SMPN 1 Nusantara.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+  </script>
+  <style>
+    .fade-up { animation: fadeUp .7s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #eef2ff; }
+    ::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased" data-page="struktur">
+
+  <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm border-b border-indigo-100">
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+      <a href="/" class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="leading-tight">
+          <p class="font-black text-indigo-600">MPK</p>
+          <p class="text-[11px] font-semibold text-slate-500">SMPN 1 Nusantara</p>
+        </div>
+      </a>
+      <div class="hidden md:flex items-center gap-7 font-semibold text-sm text-slate-600">
+        <a href="/" data-nav="index" class="hover:text-indigo-600 transition">Beranda</a>
+        <a href="/struktur" data-nav="struktur" class="hover:text-indigo-600 transition">Struktur</a>
+        <a href="/aspirasi" data-nav="aspirasi" class="hover:text-indigo-600 transition">Aspirasi</a>
+        <a href="/aspirasi" class="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-500/30"><i class="fa-solid fa-bullhorn"></i>Sampaikan Aspirasi</a>
+      </div>
+      <a href="/aspirasi" class="md:hidden w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-bullhorn"></i></a>
+    </div>
+  </nav>
+
+  <header class="bg-gradient-to-br from-indigo-700 via-purple-700 to-fuchsia-700 text-white">
+    <div class="max-w-6xl mx-auto px-4 py-16 md:py-20 text-center">
+      <span class="inline-flex items-center gap-2 text-xs font-bold bg-white/15 backdrop-blur border border-white/25 px-4 py-2 rounded-full"><i class="fa-solid fa-sitemap"></i>Organisasi</span>
+      <h1 class="mt-5 text-3xl md:text-5xl font-black">Struktur Organisasi MPK</h1>
+      <p class="mt-4 text-indigo-100 max-w-xl mx-auto">Kenali pengurus dan komisi yang siap mendengarkan suaramu. Klik kartu anggota untuk melihat kartu identitas digitalnya.</p>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-12 md:py-16">
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-12">
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 bg-white border border-indigo-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-people-group"></i>Pengurus Inti</span>
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-sky-600 bg-white border border-sky-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-hands-praying"></i>Komisi 1: Keagamaan</span>
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 bg-white border border-emerald-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-shield-halved"></i>Komisi 2: Disiplin</span>
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-rose-600 bg-white border border-rose-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-heart-pulse"></i>Komisi 3: Kebersihan</span>
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-amber-600 bg-white border border-amber-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-palette"></i>Komisi 4: Seni & Olahraga</span>
+      <span class="inline-flex items-center gap-2 text-xs font-bold text-fuchsia-600 bg-white border border-fuchsia-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-bullhorn"></i>Komisi 5: Humas</span>
+    </div>
+    <div id="strukturContainer"></div>
+  </main>
+
+  <footer class="bg-slate-900 text-slate-300">
+    <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-10">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="leading-tight">
+            <p class="font-black text-white">MPK</p>
+            <p class="text-[11px] font-semibold text-slate-400">SMPN 1 Nusantara</p>
+          </div>
+        </div>
+        <p class="mt-4 text-sm text-slate-400 leading-relaxed">Majelis Perwakilan Kelas, wadah aspirasi siswa. Dibuat oleh siswa, untuk siswa.</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-4">Tautan</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="/" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Beranda</a></li>
+          <li><a href="/struktur" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Struktur Organisasi</a></li>
+          <li><a href="/aspirasi" class="hover:text-indigo-400 transition"><i class="fa-solid fa-angle-right mr-2 text-indigo-400"></i>Saluran Aspirasi</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-white mb-4">Kontak</h4>
+        <ul class="space-y-2.5 text-sm text-slate-400">
+          <li><i class="fa-solid fa-envelope mr-2 text-indigo-400"></i>mpk@smpn1nusantara.sch.id</li>
+          <li><i class="fa-solid fa-location-dot mr-2 text-indigo-400"></i>Jl. Pendidikan No. 1, Nusantara</li>
+          <li><i class="fa-brands fa-instagram mr-2 text-indigo-400"></i>@mpk.smpn1nusantara</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-5 text-center text-xs text-slate-500">© 2026 MPK SMPN 1 Nusantara. Berani bicara, berani bertanggung jawab.</div>
+    </div>
+  </footer>
+
+  <script src="/main.js"></script>
+</body>
+</html>
