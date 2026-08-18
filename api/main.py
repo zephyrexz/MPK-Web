@@ -5,7 +5,10 @@ from typing import List, Optional
 import jwt
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -160,6 +163,14 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request, exc):
+    first = exc.errors()[0] if exc.errors() else {}
+    field = first.get("loc", ["?"])[-1]
+    msg = first.get("msg", "Data tidak valid")
+    return JSONResponse(status_code=422, content={"detail": f"Data tidak valid pada {field}: {msg}"})
+
+
 @app.get("/")
 def read_root():
     return {"status": "online", "message": "API MPK SMPN 1 Nusantara"}
@@ -173,7 +184,11 @@ def api_root():
 def get_db():
     if SessionLocal is None:
         raise HTTPException(status_code=503, detail="Database tidak tersedia")
-    db = SessionLocal()
+    try:
+        db = SessionLocal()
+    except SQLAlchemyError as exc:
+        print("DATABASE CONNECT ERROR:", exc)
+        raise HTTPException(status_code=503, detail="Database tidak dapat dijangkau")
     try:
         yield db
     finally:
@@ -266,22 +281,36 @@ def delete_member(member_id: int, db=Depends(get_db), auth: dict = Depends(requi
 
 @router.get("/announcements", response_model=List[AnnouncementOut])
 def list_announcements(db=Depends(get_db)):
-    announcements = db.query(Announcement).order_by(Announcement.tanggal.desc()).all()
-    for announcement in announcements:
-        if announcement.tanggal is None:
-            announcement.tanggal = datetime.now(timezone.utc)
-    return announcements
+    try:
+        announcements = db.query(Announcement).order_by(Announcement.tanggal.desc()).all()
+        for announcement in announcements:
+            if announcement.tanggal is None:
+                announcement.tanggal = datetime.now(timezone.utc)
+        return announcements
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (list announcements):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat pengumuman: masalah database")
+    except Exception as exc:
+        print("SERVER ERROR (list announcements):", exc)
+        raise HTTPException(status_code=500, detail="Gagal memuat pengumuman: kesalahan server")
 
 
 @router.post("/announcements", response_model=AnnouncementOut)
 def create_announcement(
     data: AnnouncementCreate, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
-    announcement = Announcement(**data.model_dump())
-    db.add(announcement)
-    db.commit()
-    db.refresh(announcement)
-    return announcement
+    try:
+        announcement = Announcement(**data.model_dump())
+        db.add(announcement)
+        db.commit()
+        db.refresh(announcement)
+        return announcement
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (create announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan pengumuman: masalah database")
+    except Exception as exc:
+        print("SERVER ERROR (create announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan pengumuman: kesalahan server")
 
 
 @router.put("/announcements/{announcement_id}", response_model=AnnouncementOut)
@@ -291,26 +320,44 @@ def update_announcement(
     db=Depends(get_db),
     auth: dict = Depends(require_auth),
 ):
-    announcement = db.query(Announcement).filter(Announcement.id == announcement_id).first()
-    if not announcement:
-        raise HTTPException(status_code=404, detail="Pengumuman tidak ditemukan")
-    for key, value in data.model_dump().items():
-        setattr(announcement, key, value)
-    db.commit()
-    db.refresh(announcement)
-    return announcement
+    try:
+        announcement = db.query(Announcement).filter(Announcement.id == announcement_id).first()
+        if not announcement:
+            raise HTTPException(status_code=404, detail="Pengumuman tidak ditemukan")
+        for key, value in data.model_dump().items():
+            setattr(announcement, key, value)
+        db.commit()
+        db.refresh(announcement)
+        return announcement
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (update announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan pengumuman: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (update announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menyimpan pengumuman: kesalahan server")
 
 
 @router.delete("/announcements/{announcement_id}")
 def delete_announcement(
     announcement_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
-    announcement = db.query(Announcement).filter(Announcement.id == announcement_id).first()
-    if not announcement:
-        raise HTTPException(status_code=404, detail="Pengumuman tidak ditemukan")
-    db.delete(announcement)
-    db.commit()
-    return {"message": "Pengumuman berhasil dihapus"}
+    try:
+        announcement = db.query(Announcement).filter(Announcement.id == announcement_id).first()
+        if not announcement:
+            raise HTTPException(status_code=404, detail="Pengumuman tidak ditemukan")
+        db.delete(announcement)
+        db.commit()
+        return {"message": "Pengumuman berhasil dihapus"}
+    except SQLAlchemyError as exc:
+        print("DATABASE ERROR (delete announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus pengumuman: masalah database")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("SERVER ERROR (delete announcement):", exc)
+        raise HTTPException(status_code=500, detail="Gagal menghapus pengumuman: kesalahan server")
 
 
 @router.get("/aspirasi", response_model=List[AspirasiOut])
