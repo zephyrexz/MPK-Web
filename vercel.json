@@ -1,15 +1,9 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/main.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "destination": "/api/main.py"
-    }
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/main.py" },
+    { "source": "/docs", "destination": "/api/main.py" },
+    { "source": "/redoc", "destination": "/api/main.py" },
+    { "source": "/((?!api/).*)", "destination": "/public/$1" }
   ]
 }
