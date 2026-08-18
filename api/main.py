@@ -88,6 +88,56 @@ class Aspirasi(Base):
     )
 
 
+class SiteSetting(Base):
+    __tablename__ = "site_settings"
+    key = Column(String(100), primary_key=True)
+    value = Column(Text, nullable=True)
+
+
+class CarouselItem(Base):
+    __tablename__ = "carousel_items"
+    id = Column(Integer, primary_key=True, index=True)
+    image_url = Column(String(500), nullable=False)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
+    urutan = Column(Integer, nullable=False, default=0, server_default=text("0"))
+
+
+class AboutContent(Base):
+    __tablename__ = "about_content"
+    id = Column(Integer, primary_key=True)
+    pengertian = Column(Text, nullable=False)
+    visi = Column(Text, nullable=False)
+    misi = Column(Text, nullable=False)
+    makna_logo = Column(Text, nullable=False)
+
+
+DEFAULT_ABOUT_PENGERTIAN = (
+    "Majelis Perwakilan Kelas (MPK) SMPN 1 Nusantara adalah organisasi kesiswaan yang menjadi "
+    "wadah aspirasi, suara, dan kreativitas seluruh siswa. MPK dibentuk dari perwakilan setiap "
+    "kelas dan bertugas menyampaikan ide, saran, serta kritik membangun kepada pihak sekolah, "
+    "sekaligus membantu menciptakan lingkungan belajar yang nyaman, disiplin, dan berprestasi."
+)
+DEFAULT_ABOUT_VISI = (
+    "Menjadi wadah aspirasi siswa yang aktif, kreatif, dan bertanggung jawab dalam mewujudkan "
+    "sekolah yang nyaman, disiplin, dan berprestasi."
+)
+DEFAULT_ABOUT_MISI = (
+    "Menampung dan menyalurkan aspirasi seluruh siswa kepada pihak sekolah.\n"
+    "Mengadakan kegiatan positif yang mengembangkan bakat dan kreativitas siswa.\n"
+    "Membangun kerjasama yang baik antara siswa, guru, dan pihak sekolah.\n"
+    "Melatih jiwa kepemimpinan dan tanggung jawab melalui organisasi.\n"
+    "Menjadi teladan kedisiplinan bagi seluruh siswa."
+)
+DEFAULT_ABOUT_MAKNA_LOGO = (
+    "Perisai melambangkan perlindungan terhadap hak dan aspirasi setiap siswa.\n"
+    "Buku terbuka melambangkan semangat belajar dan keilmuan.\n"
+    "Bintang melambangkan cita-cita luhur dan kejujuran.\n"
+    "Rantai melambangkan persatuan dan kebersamaan antar siswa.\n"
+    "Warna biru dan emas melambangkan ketenangan, kepercayaan, dan semangat juang yang tinggi."
+)
+
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -137,6 +187,34 @@ class AspirasiStatusUpdate(BaseModel):
     status: str
 
 
+class SiteSettingIn(BaseModel):
+    key: str
+    value: str
+
+
+class CarouselItemCreate(BaseModel):
+    image_url: str
+    title: str
+    description: str
+    urutan: int = 0
+
+
+class CarouselItemOut(CarouselItemCreate):
+    id: int
+    model_config = {"from_attributes": True}
+
+
+class AboutIn(BaseModel):
+    pengertian: str
+    visi: str
+    misi: str
+    makna_logo: str
+
+
+class AboutOut(AboutIn):
+    model_config = {"from_attributes": True}
+
+
 app = FastAPI(
     title="MPK SMPN 1 Nusantara API",
     version="1.0.0",
@@ -167,11 +245,40 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={"detail": f"Internal Server Error: {str(exc)}"})
 
 
+_tables_ready = False
+
+
+def ensure_tables(db) -> None:
+    global _tables_ready
+    if _tables_ready or db is None:
+        return
+    try:
+        Base.metadata.create_all(bind=db.get_bind())
+        if not db.query(AboutContent).first():
+            db.add(
+                AboutContent(
+                    id=1,
+                    pengertian=DEFAULT_ABOUT_PENGERTIAN,
+                    visi=DEFAULT_ABOUT_VISI,
+                    misi=DEFAULT_ABOUT_MISI,
+                    makna_logo=DEFAULT_ABOUT_MAKNA_LOGO,
+                )
+            )
+        if not db.query(SiteSetting).filter_by(key="logo_url").first():
+            db.add(SiteSetting(key="logo_url", value=""))
+        db.commit()
+        _tables_ready = True
+        print("Tabel database siap: members, announcements, aspirasi, site_settings, carousel_items, about_content")
+    except SQLAlchemyError as exc:
+        print("WARNING: create_all/seed tidak selesai:", exc)
+
+
 def get_db():
     if SessionLocal is None:
         raise HTTPException(status_code=503, detail="Database engine tidak aktif")
     db = SessionLocal()
     try:
+        ensure_tables(db)
         yield db
     except SQLAlchemyError as exc:
         db.rollback()
@@ -439,4 +546,145 @@ def delete_aspirasi(aspirasi_id: int, db=Depends(get_db), auth: dict = Depends(r
     except Exception as exc:
         db.rollback()
         print("DELETE ASPIRASI ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- SETTINGS SITUS (LOGO DINAMIS, DLL) ---
+@app.get("/settings")
+@app.get("/api/settings")
+def get_settings(db=Depends(get_db)):
+    try:
+        rows = db.query(SiteSetting).all()
+        return {r.key: (r.value or "") for r in rows}
+    except Exception as exc:
+        print("GET SETTINGS ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.put("/settings")
+@app.put("/api/settings")
+def upsert_setting(data: SiteSettingIn, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        row = db.query(SiteSetting).filter_by(key=data.key).first()
+        if row:
+            row.value = data.value
+        else:
+            db.add(SiteSetting(key=data.key, value=data.value))
+        db.commit()
+        return {"key": data.key, "value": data.value}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("UPDATE SETTINGS ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- CAROUSEL (GALERI KEGIATAN) ---
+@app.get("/carousel", response_model=List[CarouselItemOut])
+@app.get("/api/carousel", response_model=List[CarouselItemOut])
+def list_carousel(db=Depends(get_db)):
+    try:
+        items = db.query(CarouselItem).order_by(CarouselItem.urutan, CarouselItem.id).all()
+        for item in items:
+            item.urutan = item.urutan or 0
+        return items
+    except Exception as exc:
+        print("GET CAROUSEL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/carousel", response_model=CarouselItemOut)
+@app.post("/api/carousel", response_model=CarouselItemOut)
+def create_carousel_item(data: CarouselItemCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        item = CarouselItem(**data.model_dump())
+        db.add(item)
+        db.commit()
+        db.refresh(item)
+        return item
+    except Exception as exc:
+        db.rollback()
+        print("CREATE CAROUSEL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.put("/carousel/{item_id}", response_model=CarouselItemOut)
+@app.put("/api/carousel/{item_id}", response_model=CarouselItemOut)
+def update_carousel_item(item_id: int, data: CarouselItemCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        item = db.query(CarouselItem).filter(CarouselItem.id == item_id).first()
+        if not item:
+            raise HTTPException(status_code=404, detail="Gambar carousel tidak ditemukan")
+        for key, value in data.model_dump().items():
+            setattr(item, key, value)
+        db.commit()
+        db.refresh(item)
+        return item
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("UPDATE CAROUSEL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.delete("/carousel/{item_id}")
+@app.delete("/api/carousel/{item_id}")
+def delete_carousel_item(item_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        item = db.query(CarouselItem).filter(CarouselItem.id == item_id).first()
+        if not item:
+            raise HTTPException(status_code=404, detail="Gambar carousel tidak ditemukan")
+        db.delete(item)
+        db.commit()
+        return {"message": "Gambar carousel berhasil dihapus"}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("DELETE CAROUSEL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- TENTANG MPK ---
+@app.get("/about", response_model=AboutOut)
+@app.get("/api/about", response_model=AboutOut)
+def get_about(db=Depends(get_db)):
+    try:
+        row = db.query(AboutContent).first()
+        if not row:
+            row = AboutContent(
+                id=1,
+                pengertian=DEFAULT_ABOUT_PENGERTIAN,
+                visi=DEFAULT_ABOUT_VISI,
+                misi=DEFAULT_ABOUT_MISI,
+                makna_logo=DEFAULT_ABOUT_MAKNA_LOGO,
+            )
+            db.add(row)
+            db.commit()
+            db.refresh(row)
+        return row
+    except Exception as exc:
+        print("GET ABOUT ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.put("/about", response_model=AboutOut)
+@app.put("/api/about", response_model=AboutOut)
+def update_about(data: AboutIn, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        row = db.query(AboutContent).first()
+        if not row:
+            row = AboutContent(id=1, **data.model_dump())
+            db.add(row)
+        else:
+            for key, value in data.model_dump().items():
+                setattr(row, key, value)
+        db.commit()
+        db.refresh(row)
+        return row
+    except Exception as exc:
+        db.rollback()
+        print("UPDATE ABOUT ERROR:", exc)
         raise HTTPException(status_code=500, detail=str(exc))

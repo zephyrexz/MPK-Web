@@ -47,6 +47,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var KOMISI_ORDER = ['Pengurus Inti', 'Komisi 1', 'Komisi 2', 'Komisi 3', 'Komisi 4', 'Komisi 5'];
 
+  var JABATAN_ORDER = ['Pembina', 'Ketua MPK', 'Wakil Ketua', 'Sekretaris', 'Bendahara', 'Koordinator', 'Anggota'];
+
+  var DEMO_CAROUSEL = [
+    { id: 1, image_url: 'https://picsum.photos/seed/mpk-kegiatan-1/1200/560', title: 'Rapat Pleno MPK', description: 'Pengurus inti MPK mengadakan rapat pleno untuk menyusun program kerja satu periode ke depan.' },
+    { id: 2, image_url: 'https://picsum.photos/seed/mpk-kegiatan-2/1200/560', title: 'Bakti Sosial', description: 'Kegiatan bakti sosial MPK ke panti asuhan sebagai wujud kepedulian terhadap sesama.' },
+    { id: 3, image_url: 'https://picsum.photos/seed/mpk-kegiatan-3/1200/560', title: 'Kotak Aspirasi Digital', description: 'Saluran aspirasi digital dibuka agar setiap suara siswa didengar oleh pengurus inti.' }
+  ];
+
+  var DEMO_ABOUT = {
+    pengertian: 'Majelis Perwakilan Kelas (MPK) SMPN 1 Nusantara adalah organisasi kesiswaan yang menjadi wadah aspirasi, suara, dan kreativitas seluruh siswa.',
+    visi: 'Menjadi wadah aspirasi siswa yang aktif, kreatif, dan bertanggung jawab dalam mewujudkan sekolah yang nyaman, disiplin, dan berprestasi.',
+    misi: 'Menampung dan menyalurkan aspirasi seluruh siswa kepada pihak sekolah.\nMengadakan kegiatan positif yang mengembangkan bakat dan kreativitas siswa.\nMembangun kerjasama yang baik antara siswa, guru, dan pihak sekolah.',
+    makna_logo: 'Perisai melambangkan perlindungan terhadap hak dan aspirasi setiap siswa.\nBuku terbuka melambangkan semangat belajar dan keilmuan.\nBintang melambangkan cita-cita luhur dan kejujuran.'
+  };
+
   var AVATAR_GRADIENTS = [
     'from-indigo-500 to-purple-500',
     'from-sky-500 to-blue-600',
@@ -126,6 +141,40 @@ document.addEventListener('DOMContentLoaded', function () {
         link.classList.add('text-indigo-600');
       }
     });
+  }
+
+  function applyLogo() {
+    var slots = document.querySelectorAll('[data-logo-slot]');
+    if (!slots.length) return;
+    var fallback = function () {
+      slots.forEach(function (slot) {
+        slot.innerHTML = '<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-graduation-cap"></i></div>';
+      });
+    };
+    try {
+      fetch(API_BASE + '/settings')
+        .then(function (res) { return res.ok ? res.json() : {}; })
+        .then(function (s) {
+          var url = (s && s.logo_url) ? String(s.logo_url).trim() : '';
+          if (!url) { fallback(); return; }
+          slots.forEach(function (slot) {
+            slot.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" class="w-9 h-9 rounded-xl object-contain bg-white shadow-md">';
+          });
+        })
+        .catch(function () { fallback(); });
+    } catch (err) {
+      fallback();
+    }
+  }
+
+  function initMobileMenu() {
+    var btn = document.getElementById('mobileMenuBtn');
+    var menu = document.getElementById('mobileMenu');
+    if (btn && menu) {
+      btn.addEventListener('click', function () {
+        menu.classList.toggle('hidden');
+      });
+    }
   }
 
   function showAdminBanner(message) {
@@ -255,9 +304,13 @@ document.addEventListener('DOMContentLoaded', function () {
   function initDashboardPage() {
     initTabs();
     bindAdminForms();
+    bindDashboardForms();
     loadAspirasiAdmin();
     loadAnnouncementsAdmin();
     loadMembersAdmin();
+    loadSettingsAdmin();
+    loadAboutAdmin();
+    loadCarouselAdmin();
   }
 
   function bindAdminForms() {
@@ -728,7 +781,71 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function loadCarousel() {
+    var container = document.getElementById('heroCarousel');
+    if (!container) return;
+    try {
+      fetch(API_BASE + '/carousel')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Gagal memuat galeri');
+          return res.json();
+        })
+        .then(function (items) {
+          renderCarousel(items && items.length ? items : DEMO_CAROUSEL, container);
+        })
+        .catch(function () {
+          renderCarousel(DEMO_CAROUSEL, container);
+        });
+    } catch (err) {
+      renderCarousel(DEMO_CAROUSEL, container);
+    }
+  }
+
+  function renderCarousel(items, container) {
+    var state = { index: 0, timer: null };
+    var slides = items.map(function (item, i) {
+      return '' +
+        '<div data-slide="' + i + '" class="' + (i === 0 ? '' : 'hidden') + '">' +
+          '<div class="relative overflow-hidden rounded-t-3xl">' +
+            '<img src="' + escapeHtml(item.image_url) + '" alt="' + escapeHtml(item.title) + '" class="w-full h-64 md:h-96 object-cover">' +
+            '<div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent"></div>' +
+          '</div>' +
+          '<div class="bg-white border border-indigo-100 border-t-0 rounded-b-3xl p-6 text-center">' +
+            '<h3 class="text-xl font-black text-slate-900">' + escapeHtml(item.title) + '</h3>' +
+            '<p class="mt-2 text-sm text-slate-500 max-w-2xl mx-auto">' + escapeHtml(item.description) + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+    var dots = items.map(function (item, i) {
+      return '<button data-dot="' + i + '" aria-label="Slide ' + (i + 1) + '" class="w-2.5 h-2.5 rounded-full transition ' + (i === 0 ? 'bg-indigo-600 w-6' : 'bg-indigo-200 hover:bg-indigo-300') + '"></button>';
+    }).join('');
+    container.innerHTML = '' +
+      '<div class="relative">' +
+        '<div class="relative">' + slides + '</div>' +
+        '<button data-prev aria-label="Sebelumnya" class="absolute left-3 top-1/3 w-10 h-10 rounded-full bg-white/80 backdrop-blur text-indigo-700 shadow-lg flex items-center justify-center hover:bg-white transition z-10"><i class="fa-solid fa-chevron-left"></i></button>' +
+        '<button data-next aria-label="Berikutnya" class="absolute right-3 top-1/3 w-10 h-10 rounded-full bg-white/80 backdrop-blur text-indigo-700 shadow-lg flex items-center justify-center hover:bg-white transition z-10"><i class="fa-solid fa-chevron-right"></i></button>' +
+        '<div class="flex items-center justify-center gap-2 mt-5">' + dots + '</div>' +
+      '</div>';
+    var show = function (i) {
+      state.index = (i + items.length) % items.length;
+      container.querySelectorAll('[data-slide]').forEach(function (s) {
+        s.classList.toggle('hidden', Number(s.getAttribute('data-slide')) !== state.index);
+      });
+      container.querySelectorAll('[data-dot]').forEach(function (d) {
+        var active = Number(d.getAttribute('data-dot')) === state.index;
+        d.className = 'w-2.5 h-2.5 rounded-full transition ' + (active ? 'bg-indigo-600 w-6' : 'bg-indigo-200 hover:bg-indigo-300');
+      });
+    };
+    container.querySelector('[data-prev]').addEventListener('click', function () { show(state.index - 1); });
+    container.querySelector('[data-next]').addEventListener('click', function () { show(state.index + 1); });
+    container.querySelectorAll('[data-dot]').forEach(function (d) {
+      d.addEventListener('click', function () { show(Number(d.getAttribute('data-dot'))); });
+    });
+    state.timer = window.setInterval(function () { show(state.index + 1); }, 5000);
+  }
+
   function initIndexPage() {
+    loadCarousel();
     var container = document.getElementById('announcementsContainer');
     if (!container) return;
     try {
@@ -767,6 +884,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function initStrukturPage() {
+    initMemberModal();
     var container = document.getElementById('strukturContainer');
     if (!container) return;
     try {
@@ -786,42 +904,110 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function buildTree(members) {
+    var pembina = [], inti = [], lain = [];
+    members.forEach(function (m) {
+      var j = String(m.jabatan || '').toLowerCase();
+      var k = String(m.komisi || '');
+      if (j.indexOf('pembina') !== -1 || k === 'Pembina') pembina.push(m);
+      else if (k === 'Pengurus Inti') inti.push(m);
+      else lain.push(m);
+    });
+    var sort = function (a, b) {
+      var ia = JABATAN_ORDER.indexOf(a.jabatan);
+      var ib = JABATAN_ORDER.indexOf(b.jabatan);
+      if (ia === -1) ia = 99;
+      if (ib === -1) ib = 99;
+      return ia - ib || a.id - b.id;
+    };
+    pembina.sort(sort);
+    inti.sort(sort);
+    lain.sort(sort);
+    return { pembina: pembina, inti: inti, lain: lain };
+  }
+
+  function treeNode(m, g) {
+    var photo = m.foto
+      ? '<img src="' + escapeHtml(m.foto) + '" alt="Foto ' + escapeHtml(m.nama) + '" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md">'
+      : '<div class="w-14 h-14 rounded-full bg-gradient-to-br ' + g + ' text-white flex items-center justify-center font-black text-lg shadow-md border-2 border-white">' + initials(m.nama) + '</div>';
+    return '' +
+      '<button type="button" data-member-id="' + m.id + '" class="group text-center w-44 sm:w-52 px-4 py-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-sm hover:shadow-xl hover:border-indigo-400 hover:-translate-y-1 transition-all duration-300 cursor-pointer">' +
+        '<div class="mx-auto mb-3">' + photo + '</div>' +
+        '<h3 class="font-extrabold text-slate-900 text-sm leading-tight group-hover:text-indigo-600 transition">' + escapeHtml(m.nama) + '</h3>' +
+        '<p class="text-xs font-bold text-indigo-600 mt-1">' + escapeHtml(m.jabatan) + '</p>' +
+        '<p class="text-[11px] text-slate-400 font-medium mt-0.5"><i class="fa-solid fa-school mr-1"></i>Kelas ' + escapeHtml(m.kelas) + '</p>' +
+        '<p class="mt-2 text-[10px] font-semibold text-slate-400 inline-flex items-center gap-1"><i class="fa-solid fa-id-card"></i>Lihat Biodata</p>' +
+      '</button>';
+  }
+
+  function treeRow(label, members, gStart, icon) {
+    if (!members.length) return '';
+    var nodes = members.map(function (m, i) {
+      return '<div class="relative">' + treeNode(m, AVATAR_GRADIENTS[(gStart + i) % AVATAR_GRADIENTS.length]) + '</div>';
+    }).join('');
+    return '' +
+      '<div class="flex flex-col items-center">' +
+        '<span class="inline-flex items-center gap-2 text-xs font-bold px-4 py-1.5 rounded-full bg-indigo-600 text-white shadow-md mb-4"><i class="fa-solid ' + icon + '"></i>' + escapeHtml(label) + '</span>' +
+        '<div class="flex flex-wrap justify-center items-start gap-6">' + nodes + '</div>' +
+      '</div>';
+  }
+
   function renderStruktur(members, container) {
-    var groups = groupByKomisi(members);
-    if (!groups.length) {
+    var tree = buildTree(members);
+    if (!tree.pembina.length && !tree.inti.length && !tree.lain.length) {
       container.innerHTML = '<div class="text-center py-16 text-slate-400"><i class="fa-solid fa-users-slash text-4xl mb-3"></i><p class="font-semibold">Data anggota belum tersedia.</p></div>';
       return;
     }
-    container.innerHTML = groups.map(function (group, gi) {
-      var desc = KOMISI_INFO[group.komisi] || '';
-      var cards = group.anggota.map(function (m, mi) {
-        var g = AVATAR_GRADIENTS[(gi + mi) % AVATAR_GRADIENTS.length];
-        return '' +
-          '<a href="/profile.html?id=' + m.id + '" class="group bg-white rounded-2xl border border-indigo-100 shadow-sm p-5 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-300 transition-all duration-300 block">' +
-            '<div class="flex items-center gap-4">' +
-              '<div class="w-14 h-14 rounded-full bg-gradient-to-br ' + g + ' text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-md group-hover:scale-110 transition-transform">' + initials(m.nama) + '</div>' +
-              '<div class="min-w-0">' +
-                '<h3 class="font-extrabold text-slate-900 truncate">' + escapeHtml(m.nama) + '</h3>' +
-                '<p class="text-indigo-600 text-sm font-semibold">' + escapeHtml(m.jabatan) + '</p>' +
-                '<p class="text-xs text-slate-400 font-medium"><i class="fa-solid fa-school mr-1"></i>Kelas ' + escapeHtml(m.kelas) + '</p>' +
-              '</div>' +
-            '</div>' +
-            (m.motto ? '<p class="mt-3 text-xs italic text-slate-500 border-t border-slate-100 pt-3">"' + escapeHtml(m.motto) + '"</p>' : '') +
-          '</a>';
-      }).join('');
-      return '' +
-        '<section class="mb-12">' +
-          '<div class="flex items-center gap-3 mb-6">' +
-            '<div class="w-11 h-11 rounded-xl bg-gradient-to-br ' + AVATAR_GRADIENTS[gi % AVATAR_GRADIENTS.length] + ' text-white flex items-center justify-center shadow-lg"><i class="fa-solid ' + komisiIcon(group.komisi) + '"></i></div>' +
-            '<div>' +
-              '<h2 class="text-xl font-black text-slate-900">' + escapeHtml(group.komisi) + '</h2>' +
-              (desc ? '<p class="text-sm text-slate-500">' + escapeHtml(desc) + '</p>' : '') +
-            '</div>' +
-            '<span class="ml-auto text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">' + group.anggota.length + ' Anggota</span>' +
-          '</div>' +
-          '<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">' + cards + '</div>' +
-        '</section>';
-    }).join('');
+    container.innerHTML = '' +
+      '<div class="flex flex-col items-center">' +
+        '<div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-2xl shadow-xl shadow-indigo-500/30 mb-2"><i class="fa-solid fa-school"></i></div>' +
+        '<p class="text-lg font-black text-slate-900">SMPN 1 Nusantara</p>' +
+        '<p class="text-xs text-slate-400 font-semibold mb-2">Organisasi Siswa</p>' +
+        '<div class="w-px h-10 bg-indigo-300"></div>' +
+        treeRow('Pembina', tree.pembina, 0, 'fa-chalkboard-user') +
+        (tree.pembina.length ? '<div class="flex justify-center"><div class="w-px h-10 bg-indigo-300"></div></div>' : '') +
+        treeRow('Pengurus Inti', tree.inti, 1, 'fa-users-gear') +
+        (tree.inti.length && tree.lain.length ? '<div class="flex justify-center"><div class="w-px h-10 bg-indigo-300"></div></div>' : '') +
+        treeRow('Anggota', tree.lain, 2, 'fa-users') +
+      '</div>' +
+      '<p class="mt-10 text-center text-xs text-slate-400"><i class="fa-solid fa-circle-info mr-1"></i>Klik kartu anggota untuk melihat biodata dan kartu identitas digital.</p>';
+    container.querySelectorAll('[data-member-id]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-member-id');
+        members.forEach(function (m) {
+          if (String(m.id) === String(id)) openMemberModal(m);
+        });
+      });
+    });
+  }
+
+  function initMemberModal() {
+    var modal = document.getElementById('memberModal');
+    if (!modal) return;
+    var closeBtn = modal.querySelector('[data-modal-close]');
+    if (closeBtn) closeBtn.addEventListener('click', closeMemberModal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeMemberModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeMemberModal();
+    });
+  }
+
+  function openMemberModal(member) {
+    var modal = document.getElementById('memberModal');
+    var card = document.getElementById('memberModalCard');
+    if (!modal) return;
+    renderIdCard(member, card);
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMemberModal() {
+    var modal = document.getElementById('memberModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   function initAspirasiPage() {
@@ -892,6 +1078,44 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  function initTentangPage() {
+    var root = document.getElementById('aboutPengertian');
+    if (!root) return;
+    try {
+      fetch(API_BASE + '/about')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Gagal memuat konten');
+          return res.json();
+        })
+        .then(function (a) {
+          renderAbout(a);
+        })
+        .catch(function () {
+          renderAbout(DEMO_ABOUT);
+        });
+    } catch (err) {
+      renderAbout(DEMO_ABOUT);
+    }
+  }
+
+  function renderAbout(a) {
+    var set = function (id, text) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = text || '';
+    };
+    set('aboutPengertian', a.pengertian);
+    set('aboutVisi', a.visi);
+    set('aboutMaknaLogo', a.makna_logo);
+    var misiList = document.getElementById('aboutMisi');
+    if (misiList) {
+      misiList.innerHTML = String(a.misi || '').split('\n').map(function (line) {
+        var t = line.trim();
+        if (!t) return '';
+        return '<li class="flex items-start gap-3"><i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i><span>' + escapeHtml(t) + '</span></li>';
+      }).join('');
+    }
+  }
+
   function initProfilePage() {
     var card = document.getElementById('idCard');
     var errorBox = document.getElementById('profileError');
@@ -955,12 +1179,243 @@ document.addEventListener('DOMContentLoaded', function () {
       '</div>';
   }
 
+  // --- 3.5 DASHBOARD PENGATURAN SITUS / GALERI / TENTANG / QR ---
+  function loadSettingsAdmin() {
+    var input = document.getElementById('logoUrl');
+    if (!input) return;
+    try {
+      apiFetch(API_BASE + '/settings')
+        .then(function (res) { return res.ok ? res.json() : {}; })
+        .then(function (s) { input.value = (s && s.logo_url) || ''; })
+        .catch(function () { showAdminBanner('Gagal memuat pengaturan situs.'); });
+    } catch (err) {
+      showAdminBanner('Gagal memuat pengaturan situs.');
+    }
+  }
+
+  function saveLogoSetting() {
+    var input = document.getElementById('logoUrl');
+    if (!input) return;
+    apiFetch(API_BASE + '/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ key: 'logo_url', value: input.value.trim() })
+    })
+      .then(function (res) {
+        if (res.status === 401) { handleUnauthorized(); return; }
+        if (!res.ok) throw new Error('Gagal menyimpan logo');
+        showAdminBanner('Logo berhasil diperbarui dan langsung dipakai di seluruh halaman.');
+        applyLogo();
+      })
+      .catch(function () { showAdminBanner('Gagal menyimpan pengaturan logo.'); });
+  }
+
+  function loadAboutAdmin() {
+    try {
+      apiFetch(API_BASE + '/about')
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (a) {
+          if (!a) return;
+          var set = function (id, text) {
+            var el = document.getElementById(id);
+            if (el) el.value = text || '';
+          };
+          set('aboutPengertianAdmin', a.pengertian);
+          set('aboutVisiAdmin', a.visi);
+          set('aboutMisiAdmin', a.misi);
+          set('aboutMaknaAdmin', a.makna_logo);
+        })
+        .catch(function () { showAdminBanner('Gagal memuat konten Tentang MPK.'); });
+    } catch (err) {
+      showAdminBanner('Gagal memuat konten Tentang MPK.');
+    }
+  }
+
+  function saveAboutContent() {
+    var get = function (id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    };
+    var payload = {
+      pengertian: get('aboutPengertianAdmin'),
+      visi: get('aboutVisiAdmin'),
+      misi: get('aboutMisiAdmin'),
+      makna_logo: get('aboutMaknaAdmin')
+    };
+    apiFetch(API_BASE + '/about', { method: 'PUT', body: JSON.stringify(payload) })
+      .then(function (res) {
+        if (res.status === 401) { handleUnauthorized(); return; }
+        if (!res.ok) throw new Error('Gagal menyimpan konten');
+        showAdminBanner('Konten Tentang MPK berhasil disimpan.');
+      })
+      .catch(function () { showAdminBanner('Gagal menyimpan konten Tentang MPK.'); });
+  }
+
+  var editingCarouselId = null;
+
+  function loadCarouselAdmin() {
+    var container = document.getElementById('carouselList');
+    if (!container) return;
+    try {
+      apiFetch(API_BASE + '/carousel')
+        .then(function (res) { return res.ok ? res.json() : []; })
+        .then(function (items) {
+          if (!items.length) {
+            container.innerHTML = '<div class="text-center text-slate-400 py-10 bg-white rounded-2xl border border-slate-200"><i class="fa-solid fa-images text-4xl mb-3"></i><p>Belum ada gambar galeri.</p></div>';
+            return;
+          }
+          container.innerHTML = items.map(function (item) {
+            return '' +
+              '<div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">' +
+                '<img src="' + escapeHtml(item.image_url) + '" alt="' + escapeHtml(item.title) + '" class="w-20 h-14 rounded-xl object-cover shrink-0">' +
+                '<div class="min-w-0 flex-1">' +
+                  '<p class="font-bold text-slate-900 truncate">' + escapeHtml(item.title) + '</p>' +
+                  '<p class="text-xs text-slate-400 line-clamp-2">' + escapeHtml(item.description) + '</p>' +
+                  '<p class="text-[11px] text-slate-400 mt-1">Urutan: ' + Number(item.urutan || 0) + '</p>' +
+                '</div>' +
+                '<div class="flex items-center gap-2">' +
+                  '<button data-carousel-edit="' + item.id + '" class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition" title="Edit"><i class="fa-solid fa-pen"></i></button>' +
+                  '<button data-carousel-delete="' + item.id + '" class="w-9 h-9 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div>' +
+              '</div>';
+          }).join('');
+          container.querySelectorAll('[data-carousel-edit]').forEach(function (btn) {
+            btn.addEventListener('click', function () { editCarouselItem(btn.getAttribute('data-carousel-edit')); });
+          });
+          container.querySelectorAll('[data-carousel-delete]').forEach(function (btn) {
+            btn.addEventListener('click', function () { deleteCarouselItem(btn.getAttribute('data-carousel-delete')); });
+          });
+        })
+        .catch(function () { showAdminBanner('Gagal memuat galeri.'); });
+    } catch (err) {
+      showAdminBanner('Gagal memuat galeri.');
+    }
+  }
+
+  function saveCarouselItem() {
+    var get = function (id) {
+      var el = document.getElementById(id);
+      return el ? el.value.trim() : '';
+    };
+    var payload = {
+      image_url: get('carouselImageUrl'),
+      title: get('carouselTitle'),
+      description: get('carouselDescription'),
+      urutan: Number(get('carouselUrutan')) || 0
+    };
+    if (!payload.image_url || !payload.title || !payload.description) {
+      showAdminBanner('URL gambar, judul, dan deskripsi wajib diisi.');
+      return;
+    }
+    var method = 'POST';
+    var url = API_BASE + '/carousel';
+    if (editingCarouselId) {
+      method = 'PUT';
+      url = API_BASE + '/carousel/' + editingCarouselId;
+    }
+    apiFetch(url, { method: method, body: JSON.stringify(payload) })
+      .then(function (res) {
+        if (res.status === 401) { handleUnauthorized(); return; }
+        if (!res.ok) throw new Error('Gagal menyimpan galeri');
+        resetCarouselForm();
+        loadCarouselAdmin();
+      })
+      .catch(function () { showAdminBanner('Gagal menyimpan gambar galeri.'); });
+  }
+
+  function resetCarouselForm() {
+    editingCarouselId = null;
+    var form = document.getElementById('carouselForm');
+    if (form) form.reset();
+    var btn = document.getElementById('carouselSubmit');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-plus"></i> Tambah Gambar';
+  }
+
+  function editCarouselItem(id) {
+    try {
+      apiFetch(API_BASE + '/carousel')
+        .then(function (res) { return res.ok ? res.json() : []; })
+        .then(function (items) {
+          var item = null;
+          items.forEach(function (x) { if (String(x.id) === String(id)) item = x; });
+          if (!item) { showAdminBanner('Gambar tidak ditemukan.'); return; }
+          editingCarouselId = String(id);
+          document.getElementById('carouselImageUrl').value = item.image_url;
+          document.getElementById('carouselTitle').value = item.title;
+          document.getElementById('carouselDescription').value = item.description;
+          document.getElementById('carouselUrutan').value = Number(item.urutan || 0);
+          document.getElementById('carouselSubmit').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
+        })
+        .catch(function () { showAdminBanner('Gagal memuat galeri.'); });
+    } catch (err) {
+      showAdminBanner('Gagal memuat galeri.');
+    }
+  }
+
+  function deleteCarouselItem(id) {
+    if (!window.confirm('Hapus gambar galeri ini?')) return;
+    try {
+      apiFetch(API_BASE + '/carousel/' + id, { method: 'DELETE' })
+        .then(function (res) {
+          if (res.status === 401) { handleUnauthorized(); return; }
+          if (!res.ok) throw new Error('Gagal menghapus');
+          loadCarouselAdmin();
+        })
+        .catch(function () { showAdminBanner('Gagal menghapus gambar galeri.'); });
+    } catch (err) {
+      showAdminBanner('Gagal menghapus gambar galeri.');
+    }
+  }
+
+  function bindDashboardForms() {
+    var logoForm = document.getElementById('logoForm');
+    if (logoForm) {
+      logoForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveLogoSetting();
+      });
+    }
+    var aboutForm = document.getElementById('aboutForm');
+    if (aboutForm) {
+      aboutForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveAboutContent();
+      });
+    }
+    var carouselForm = document.getElementById('carouselForm');
+    if (carouselForm) {
+      carouselForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        saveCarouselItem();
+      });
+    }
+    var qrBtn = document.getElementById('qrGenerate');
+    if (qrBtn) {
+      qrBtn.addEventListener('click', generateQR);
+    }
+  }
+
+  function generateQR() {
+    var input = document.getElementById('qrData');
+    var box = document.getElementById('qrResult');
+    if (!input || !box) return;
+    var data = input.value.trim();
+    if (!data) {
+      showAdminBanner('Masukkan teks atau URL terlebih dahulu.');
+      return;
+    }
+    box.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' + encodeURIComponent(data) + '" alt="QR Code" class="mx-auto rounded-2xl shadow-lg border border-slate-200">' +
+      '<p class="text-center text-xs text-slate-400 mt-3">Scan untuk membuka: ' + escapeHtml(data) + '</p>';
+  }
+
   // --- 4. PAGE INITIALIZATION ---
   setActiveNav();
+  applyLogo();
+  initMobileMenu();
   var page = document.body.getAttribute('data-page');
   if (page === 'index') initIndexPage();
   if (page === 'struktur') initStrukturPage();
   if (page === 'aspirasi') initAspirasiPage();
+  if (page === 'tentang') initTentangPage();
   if (page === 'profile') initProfilePage();
   if (page === 'dashboard') initDashboardPage();
 });
