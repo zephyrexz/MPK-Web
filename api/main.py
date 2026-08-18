@@ -54,6 +54,7 @@ class Member(Base):
     kelas = Column(String(10), nullable=False)
     jabatan = Column(String(100), nullable=False)
     komisi = Column(String(100), nullable=False, default="Pengurus Inti", server_default=text("'Pengurus Inti'"))
+    periode = Column(String(20), nullable=True, default="2026/2027")
     foto = Column(String(500), nullable=True)
     motto = Column(String(255), nullable=True)
 
@@ -112,8 +113,17 @@ class AboutContent(Base):
     makna_logo = Column(Text, nullable=False)
 
 
+class SocialMedia(Base):
+    __tablename__ = "social_media"
+    id = Column(Integer, primary_key=True, index=True)
+    platform = Column(String(50), nullable=False)
+    nama = Column(String(100), nullable=False)
+    url = Column(String(500), nullable=False)
+    urutan = Column(Integer, nullable=False, default=0, server_default=text("0"))
+
+
 DEFAULT_ABOUT_PENGERTIAN = (
-    "Majelis Perwakilan Kelas (MPK) SMPN 1 Nusantara adalah organisasi kesiswaan yang menjadi "
+    "Majelis Perwakilan Kelas (MPK) SMP Negeri 248 Jakarta adalah organisasi kesiswaan yang menjadi "
     "wadah aspirasi, suara, dan kreativitas seluruh siswa. MPK dibentuk dari perwakilan setiap "
     "kelas dan bertugas menyampaikan ide, saran, serta kritik membangun kepada pihak sekolah, "
     "sekaligus membantu menciptakan lingkungan belajar yang nyaman, disiplin, dan berprestasi."
@@ -148,6 +158,7 @@ class MemberCreate(BaseModel):
     kelas: str
     jabatan: str
     komisi: str = "Pengurus Inti"
+    periode: Optional[str] = None
     foto: Optional[str] = None
     motto: Optional[str] = None
 
@@ -215,8 +226,20 @@ class AboutOut(AboutIn):
     model_config = {"from_attributes": True}
 
 
+class SocialMediaCreate(BaseModel):
+    platform: str
+    nama: str
+    url: str
+    urutan: int = 0
+
+
+class SocialMediaOut(SocialMediaCreate):
+    id: int
+    model_config = {"from_attributes": True}
+
+
 app = FastAPI(
-    title="MPK SMPN 1 Nusantara API",
+    title="MPK SMP Negeri 248 Jakarta API",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -254,6 +277,12 @@ def ensure_tables(db) -> None:
         return
     try:
         Base.metadata.create_all(bind=db.get_bind())
+        try:
+            db.execute(text("ALTER TABLE members ADD COLUMN periode VARCHAR(20) DEFAULT '2026/2027'"))
+            db.commit()
+            print("Migrasi: kolom members.periode ditambahkan")
+        except SQLAlchemyError:
+            db.rollback()
         if not db.query(AboutContent).first():
             db.add(
                 AboutContent(
@@ -266,9 +295,15 @@ def ensure_tables(db) -> None:
             )
         if not db.query(SiteSetting).filter_by(key="logo_url").first():
             db.add(SiteSetting(key="logo_url", value=""))
+        if db.query(SocialMedia).count() == 0:
+            db.add_all([
+                SocialMedia(platform="instagram", nama="@mpk.smp248jakarta", url="https://instagram.com/mpk.smp248jakarta", urutan=0),
+                SocialMedia(platform="tiktok", nama="@mpksmp248", url="https://tiktok.com/@mpksmp248", urutan=1),
+                SocialMedia(platform="youtube", nama="MPK SMP Negeri 248 Jakarta", url="https://youtube.com/@mpksmp248jakarta", urutan=2),
+            ])
         db.commit()
         _tables_ready = True
-        print("Tabel database siap: members, announcements, aspirasi, site_settings, carousel_items, about_content")
+        print("Tabel database siap: members, announcements, aspirasi, site_settings, carousel_items, about_content, social_media")
     except SQLAlchemyError as exc:
         print("WARNING: create_all/seed tidak selesai:", exc)
 
@@ -317,12 +352,12 @@ def require_auth(authorization: str = Header(default="")) -> dict:
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "message": "API MPK SMPN 1 Nusantara"}
+    return {"status": "online", "message": "API MPK SMP Negeri 248 Jakarta"}
 
 
 @app.get("/api")
 def api_root():
-    return {"status": "online", "message": "API MPK SMPN 1 Nusantara", "docs": "/docs"}
+    return {"status": "online", "message": "API MPK SMP Negeri 248 Jakarta", "docs": "/docs"}
 
 
 @app.get("/health")
@@ -347,6 +382,7 @@ def list_members(db=Depends(get_db)):
         members = db.query(Member).order_by(Member.komisi, Member.id).all()
         for m in members:
             m.komisi = m.komisi or "Pengurus Inti"
+            m.periode = m.periode or "2026/2027"
             m.foto = m.foto or ""
             m.motto = m.motto or ""
         return members
@@ -687,4 +723,71 @@ def update_about(data: AboutIn, db=Depends(get_db), auth: dict = Depends(require
     except Exception as exc:
         db.rollback()
         print("UPDATE ABOUT ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- SOCIAL MEDIA ---
+@app.get("/social", response_model=List[SocialMediaOut])
+@app.get("/api/social", response_model=List[SocialMediaOut])
+def list_social(db=Depends(get_db)):
+    try:
+        rows = db.query(SocialMedia).order_by(SocialMedia.urutan, SocialMedia.id).all()
+        for s in rows:
+            s.nama = s.nama or ""
+        return rows
+    except Exception as exc:
+        print("GET SOCIAL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/social", response_model=SocialMediaOut)
+@app.post("/api/social", response_model=SocialMediaOut)
+def create_social(data: SocialMediaCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        row = SocialMedia(**data.model_dump())
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return row
+    except Exception as exc:
+        db.rollback()
+        print("CREATE SOCIAL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.put("/social/{social_id}", response_model=SocialMediaOut)
+@app.put("/api/social/{social_id}", response_model=SocialMediaOut)
+def update_social(social_id: int, data: SocialMediaCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        row = db.query(SocialMedia).filter(SocialMedia.id == social_id).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Akun sosial media tidak ditemukan")
+        for key, value in data.model_dump().items():
+            setattr(row, key, value)
+        db.commit()
+        db.refresh(row)
+        return row
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("UPDATE SOCIAL ERROR:", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.delete("/social/{social_id}")
+@app.delete("/api/social/{social_id}")
+def delete_social(social_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
+    try:
+        row = db.query(SocialMedia).filter(SocialMedia.id == social_id).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Akun sosial media tidak ditemukan")
+        db.delete(row)
+        db.commit()
+        return {"message": "Akun sosial media berhasil dihapus"}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        print("DELETE SOCIAL ERROR:", exc)
         raise HTTPException(status_code=500, detail=str(exc))

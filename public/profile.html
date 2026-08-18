@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kartu Anggota Digital - MPK SMPN 1 Nusantara</title>
-  <meta name="description" content="Kartu identitas digital anggota MPK SMPN 1 Nusantara.">
+  <title>Kartu Anggota Digital - MPK SMP Negeri 248 Jakarta</title>
+  <meta name="description" content="Kartu identitas digital anggota MPK SMP Negeri 248 Jakarta.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+    tailwind.config = { theme: { extend: { colors: { navy: '#1E3A8A', gold: '#FFD700' }, fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
   </script>
   <style>
     .fade-up { animation: fadeUp .7s ease both; }
@@ -23,26 +23,26 @@
     }
   </style>
 </head>
-<body class="bg-gradient-to-b from-indigo-100 via-slate-50 to-slate-50 font-sans text-slate-800 antialiased" data-page="profile">
+<body class="bg-gradient-to-b from-gold/15 via-slate-50 to-slate-50 font-sans text-slate-800 antialiased" data-page="profile">
 
   <div class="min-h-screen flex flex-col">
     <header class="no-print pt-3 px-3">
-      <nav class="max-w-5xl mx-auto flex items-center justify-between h-14 px-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg shadow-indigo-500/10">
+      <nav class="max-w-5xl mx-auto flex items-center justify-between h-14 px-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg shadow-navy/10">
         <a href="/" class="flex items-center gap-2.5" data-logo-slot>
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-blue-800 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-graduation-cap"></i></div>
           <div class="leading-tight">
-            <p class="font-black text-indigo-600">MPK</p>
-            <p class="text-[10px] font-semibold text-slate-500">SMPN 1 Nusantara</p>
+            <p class="font-black text-navy">MPK</p>
+            <p class="text-[10px] font-semibold text-slate-500">SMP Negeri 248 Jakarta</p>
           </div>
         </a>
-        <a href="/struktur" class="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition"><i class="fa-solid fa-arrow-left"></i>Kembali ke Struktur</a>
+        <a href="/struktur" class="inline-flex items-center gap-2 text-sm font-bold text-navy bg-gold/10 px-4 py-2 rounded-xl hover:bg-gold/20 transition"><i class="fa-solid fa-arrow-left"></i>Kembali ke Struktur</a>
       </nav>
     </header>
 
     <main class="flex-1 flex items-center justify-center px-4 py-12 md:py-16">
       <div class="w-full max-w-md fade-up">
         <div class="text-center mb-8">
-          <span class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 bg-white border border-indigo-200 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-id-card"></i>Kartu Identitas Digital</span>
+          <span class="inline-flex items-center gap-2 text-xs font-bold text-navy bg-white border border-gold/30 px-4 py-2 rounded-full shadow-sm"><i class="fa-solid fa-id-card"></i>Kartu Identitas Digital</span>
           <h1 class="mt-4 text-2xl md:text-3xl font-black text-slate-900">Kartu Anggota MPK</h1>
         </div>
 
@@ -50,21 +50,21 @@
           <div class="w-16 h-16 mx-auto rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-user-slash"></i></div>
           <h2 class="font-black text-slate-900">Anggota Tidak Ditemukan</h2>
           <p class="mt-2 text-sm text-slate-500">Pastikan link kartu anggota yang kamu buka sudah benar. Hubungi pengurus MPK jika masih bermasalah.</p>
-          <a href="/struktur" class="mt-6 inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/30"><i class="fa-solid fa-users"></i>Lihat Struktur</a>
+          <a href="/struktur" class="mt-6 inline-flex items-center gap-2 bg-navy text-white font-bold px-6 py-3 rounded-2xl hover:bg-blue-900 transition shadow-lg shadow-navy/30"><i class="fa-solid fa-users"></i>Lihat Struktur</a>
         </div>
 
         <div id="idCard"></div>
 
         <div class="no-print mt-8 flex flex-col items-center gap-3">
-          <button onclick="window.print()" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-8 py-3.5 rounded-2xl hover:from-indigo-700 hover:to-purple-700 hover:-translate-y-0.5 transition shadow-lg shadow-indigo-500/30"><i class="fa-solid fa-print"></i>Simpan / Cetak Kartu</button>
-          <a href="/struktur" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 transition"><i class="fa-solid fa-arrow-left mr-1"></i>Kembali ke Struktur Organisasi</a>
+          <button onclick="window.print()" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-8 py-3.5 rounded-2xl hover:from-navy hover:to-blue-900 hover:-translate-y-0.5 transition shadow-lg shadow-navy/30"><i class="fa-solid fa-print"></i>Simpan / Cetak Kartu</button>
+          <a href="/struktur" class="text-sm font-semibold text-navy hover:text-navy transition"><i class="fa-solid fa-arrow-left mr-1"></i>Kembali ke Struktur Organisasi</a>
         </div>
       </div>
     </main>
 
     <footer class="no-print bg-slate-900 text-slate-300">
       <div class="border-t border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 py-5 text-center text-xs text-slate-500">© 2026 MPK SMPN 1 Nusantara. Kartu ini adalah identitas digital resmi anggota MPK.</div>
+        <div class="max-w-6xl mx-auto px-4 py-5 text-center text-xs text-slate-500">© 2026 MPK SMP Negeri 248 Jakarta. Kartu ini adalah identitas digital resmi anggota MPK.</div>
       </div>
     </footer>
   </div>

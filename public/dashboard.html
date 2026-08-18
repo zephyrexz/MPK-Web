@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Admin - MPK SMPN 1 Nusantara</title>
+  <title>Dashboard Admin - MPK SMP Negeri 248 Jakarta</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+    tailwind.config = { theme: { extend: { colors: { navy: '#1E3A8A', gold: '#FFD700' }, fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
   </script>
   <style>
     ::-webkit-scrollbar { width: 10px; }
@@ -20,13 +20,13 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased" data-page="dashboard">
 
-  <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white sticky top-0 z-50 shadow-lg">
+  <header class="bg-gradient-to-r from-navy via-blue-950 to-navy text-white sticky top-0 z-50 shadow-lg">
     <div class="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
       <div class="flex items-center gap-2.5" data-logo-slot>
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-navy to-blue-800 text-white flex items-center justify-center shadow-lg"><i class="fa-solid fa-user-shield"></i></div>
         <div class="leading-tight">
           <p class="font-black">Dashboard Admin MPK</p>
-          <p class="text-[11px] font-semibold text-slate-400">SMPN 1 Nusantara</p>
+          <p class="text-[11px] font-semibold text-slate-400">SMP Negeri 248 Jakarta</p>
         </div>
       </div>
       <div class="flex items-center gap-3">
@@ -42,24 +42,27 @@
     </div>
 
     <div class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-8 overflow-x-auto">
-      <button data-tab="aspirasi" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl bg-indigo-600 text-white shadow-md transition whitespace-nowrap">
+      <button data-tab="aspirasi" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl bg-navy text-white shadow-md transition whitespace-nowrap">
         <i class="fa-solid fa-envelope-open-text"></i>Aspirasi
         <span id="aspirasiCount" class="text-[10px] bg-white/25 px-2 py-0.5 rounded-full">0</span>
       </button>
-      <button data-tab="pengumuman" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-indigo-50 transition whitespace-nowrap">
+      <button data-tab="pengumuman" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
         <i class="fa-solid fa-bullhorn"></i>Pengumuman
       </button>
-      <button data-tab="anggota" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-indigo-50 transition whitespace-nowrap">
+      <button data-tab="anggota" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
         <i class="fa-solid fa-users"></i>Anggota
       </button>
-      <button data-tab="pengaturan" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-indigo-50 transition whitespace-nowrap">
+      <button data-tab="pengaturan" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
         <i class="fa-solid fa-gear"></i>Pengaturan
       </button>
-      <button data-tab="galeri" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-indigo-50 transition whitespace-nowrap">
+      <button data-tab="galeri" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
         <i class="fa-solid fa-images"></i>Galeri
       </button>
-      <button data-tab="qr" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-indigo-50 transition whitespace-nowrap">
+      <button data-tab="qr" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
         <i class="fa-solid fa-qrcode"></i>QR
+      </button>
+      <button data-tab="sosial" class="flex-1 inline-flex items-center justify-center gap-2 text-sm font-bold px-4 py-3 rounded-xl text-slate-600 hover:bg-gold/10 transition whitespace-nowrap">
+        <i class="fa-solid fa-share-nodes"></i>Sosial Media
       </button>
     </div>
 
@@ -69,7 +72,7 @@
           <h2 class="text-2xl font-black text-slate-900">Daftar Aspirasi</h2>
           <p class="text-sm text-slate-500 mt-1">Aspirasi siswa yang masuk akan tampil di sini.</p>
         </div>
-        <button onclick="document.getElementById('aspirasiList').scrollIntoView({behavior:'smooth'})" class="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition"><i class="fa-solid fa-arrow-down mr-1"></i>Ke daftar</button>
+        <button onclick="document.getElementById('aspirasiList').scrollIntoView({behavior:'smooth'})" class="text-sm font-bold text-navy hover:text-navy transition"><i class="fa-solid fa-arrow-down mr-1"></i>Ke daftar</button>
       </div>
       <div id="aspirasiList" class="space-y-4"></div>
     </section>
@@ -81,21 +84,21 @@
       </div>
 
       <form id="pengumumanForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
-        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-pen-to-square text-indigo-600 mr-2"></i>Tambah Pengumuman</h3>
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-pen-to-square text-navy mr-2"></i>Tambah Pengumuman</h3>
         <div class="mb-5">
           <label for="pengumumanJudul" class="block text-sm font-bold text-slate-700 mb-2">Judul <span class="text-rose-500">*</span></label>
-          <input id="pengumumanJudul" type="text" placeholder="contoh: Jadwal Rapat MPK Bulan Ini" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+          <input id="pengumumanJudul" type="text" placeholder="contoh: Jadwal Rapat MPK Bulan Ini" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
         </div>
         <div class="mb-5">
           <label for="pengumumanIsi" class="block text-sm font-bold text-slate-700 mb-2">Isi Pengumuman <span class="text-rose-500">*</span></label>
-          <textarea id="pengumumanIsi" rows="4" placeholder="Tulis isi pengumuman..." class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+          <textarea id="pengumumanIsi" rows="4" placeholder="Tulis isi pengumuman..." class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
         </div>
         <label class="flex items-center gap-3 mb-6 cursor-pointer select-none">
           <input id="pengumumanPenting" type="checkbox" class="w-5 h-5 rounded accent-rose-500">
           <span class="text-sm text-slate-600"><i class="fa-solid fa-circle-exclamation mr-1.5 text-rose-500"></i>Tandai sebagai pengumuman penting</span>
         </label>
         <div class="flex flex-wrap items-center gap-3">
-          <button id="pengumumanSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+          <button id="pengumumanSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
             <i class="fa-solid fa-plus"></i> Tambah Pengumuman
           </button>
           <button id="pengumumanCancel" type="button" class="hidden inline-flex items-center gap-2 bg-slate-100 text-slate-600 font-bold px-6 py-3 rounded-xl hover:bg-slate-200 transition">
@@ -114,39 +117,43 @@
       </div>
 
       <form id="anggotaForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
-        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-user-plus text-indigo-600 mr-2"></i>Tambah Anggota</h3>
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-user-plus text-navy mr-2"></i>Tambah Anggota</h3>
         <div class="grid md:grid-cols-2 gap-5 mb-5">
           <div>
             <label for="anggotaNama" class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap <span class="text-rose-500">*</span></label>
-            <input id="anggotaNama" type="text" placeholder="contoh: Raka Pratama" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="anggotaNama" type="text" placeholder="contoh: Raka Pratama" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div>
             <label for="anggotaKelas" class="block text-sm font-bold text-slate-700 mb-2">Kelas <span class="text-rose-500">*</span></label>
-            <input id="anggotaKelas" type="text" placeholder="contoh: 9A" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="anggotaKelas" type="text" placeholder="contoh: 9A" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div>
             <label for="anggotaJabatan" class="block text-sm font-bold text-slate-700 mb-2">Jabatan <span class="text-rose-500">*</span></label>
-            <input id="anggotaJabatan" type="text" placeholder="contoh: Ketua MPK" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="anggotaJabatan" type="text" placeholder="contoh: Ketua MPK" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div>
             <label for="anggotaKomisi" class="block text-sm font-bold text-slate-700 mb-2">Komisi</label>
-            <select id="anggotaKomisi" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <select id="anggotaKomisi" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
               <option value="Pengurus Inti">Pengurus Inti</option>
               <option value="Pembina">Pembina</option>
               <option value="Anggota">Anggota</option>
             </select>
           </div>
           <div class="md:col-span-2">
+            <label for="anggotaPeriode" class="block text-sm font-bold text-slate-700 mb-2">Masa Bakti (Periode)</label>
+            <input id="anggotaPeriode" type="text" placeholder="contoh: 2026/2027 (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+          </div>
+          <div class="md:col-span-2">
             <label for="anggotaFoto" class="block text-sm font-bold text-slate-700 mb-2">Foto (URL)</label>
-            <input id="anggotaFoto" type="url" placeholder="https://contoh.com/foto.jpg (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="anggotaFoto" type="url" placeholder="https://contoh.com/foto.jpg (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div class="md:col-span-2">
             <label for="anggotaMotto" class="block text-sm font-bold text-slate-700 mb-2">Motto</label>
-            <input id="anggotaMotto" type="text" placeholder="contoh: Berani bicara, bertanggung jawab! (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="anggotaMotto" type="text" placeholder="contoh: Berani bicara, bertanggung jawab! (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <button id="anggotaSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+          <button id="anggotaSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
             <i class="fa-solid fa-plus"></i> Tambah Anggota
           </button>
           <button id="anggotaCancel" type="button" class="hidden inline-flex items-center gap-2 bg-slate-100 text-slate-600 font-bold px-6 py-3 rounded-xl hover:bg-slate-200 transition">
@@ -165,36 +172,36 @@
       </div>
 
       <form id="logoForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
-        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-image text-indigo-600 mr-2"></i>Logo MPK (URL)</h3>
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-image text-navy mr-2"></i>Logo MPK (URL)</h3>
         <div class="mb-5">
           <label for="logoUrl" class="block text-sm font-bold text-slate-700 mb-2">URL Gambar Logo</label>
-          <input id="logoUrl" type="url" placeholder="https://contoh.com/logo-mpk.png" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+          <input id="logoUrl" type="url" placeholder="https://contoh.com/logo-mpk.png" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           <p class="mt-2 text-xs text-slate-400">Logo akan langsung tampil di navbar semua halaman situs. Kosongkan untuk memakai ikon bawaan.</p>
         </div>
-        <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+        <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
           <i class="fa-solid fa-floppy-disk"></i> Simpan Logo
         </button>
       </form>
 
       <form id="aboutForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
-        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-circle-info text-indigo-600 mr-2"></i>Konten Tentang MPK</h3>
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-circle-info text-navy mr-2"></i>Konten Tentang MPK</h3>
         <div class="mb-5">
           <label for="aboutPengertianAdmin" class="block text-sm font-bold text-slate-700 mb-2">Pengertian MPK</label>
-          <textarea id="aboutPengertianAdmin" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+          <textarea id="aboutPengertianAdmin" rows="3" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
         </div>
         <div class="mb-5">
           <label for="aboutVisiAdmin" class="block text-sm font-bold text-slate-700 mb-2">Visi</label>
-          <textarea id="aboutVisiAdmin" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+          <textarea id="aboutVisiAdmin" rows="2" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
         </div>
         <div class="mb-5">
           <label for="aboutMisiAdmin" class="block text-sm font-bold text-slate-700 mb-2">Misi <span class="text-xs font-semibold text-slate-400">(satu misi per baris)</span></label>
-          <textarea id="aboutMisiAdmin" rows="5" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+          <textarea id="aboutMisiAdmin" rows="5" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
         </div>
         <div class="mb-5">
           <label for="aboutMaknaAdmin" class="block text-sm font-bold text-slate-700 mb-2">Makna Logo <span class="text-xs font-semibold text-slate-400">(satu makna per baris)</span></label>
-          <textarea id="aboutMaknaAdmin" rows="5" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+          <textarea id="aboutMaknaAdmin" rows="5" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
         </div>
-        <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+        <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
           <i class="fa-solid fa-floppy-disk"></i> Simpan Konten Tentang MPK
         </button>
       </form>
@@ -207,26 +214,26 @@
       </div>
 
       <form id="carouselForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
-        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-plus text-indigo-600 mr-2"></i>Tambah Gambar Galeri</h3>
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-plus text-navy mr-2"></i>Tambah Gambar Galeri</h3>
         <div class="grid md:grid-cols-2 gap-5 mb-5">
           <div class="md:col-span-2">
             <label for="carouselImageUrl" class="block text-sm font-bold text-slate-700 mb-2">URL Gambar <span class="text-rose-500">*</span></label>
-            <input id="carouselImageUrl" type="url" placeholder="https://contoh.com/foto-kegiatan.jpg" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="carouselImageUrl" type="url" placeholder="https://contoh.com/foto-kegiatan.jpg" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div>
             <label for="carouselTitle" class="block text-sm font-bold text-slate-700 mb-2">Judul <span class="text-rose-500">*</span></label>
-            <input id="carouselTitle" type="text" placeholder="contoh: Rapat Pleno MPK" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="carouselTitle" type="text" placeholder="contoh: Rapat Pleno MPK" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div>
             <label for="carouselUrutan" class="block text-sm font-bold text-slate-700 mb-2">Urutan</label>
-            <input id="carouselUrutan" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm">
+            <input id="carouselUrutan" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div class="md:col-span-2">
             <label for="carouselDescription" class="block text-sm font-bold text-slate-700 mb-2">Deskripsi <span class="text-rose-500">*</span></label>
-            <textarea id="carouselDescription" rows="3" placeholder="Deskripsi singkat kegiatan..." class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm resize-y"></textarea>
+            <textarea id="carouselDescription" rows="3" placeholder="Deskripsi singkat kegiatan..." class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm resize-y"></textarea>
           </div>
         </div>
-        <button id="carouselSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+        <button id="carouselSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
           <i class="fa-solid fa-plus"></i> Tambah Gambar
         </button>
       </form>
@@ -234,7 +241,7 @@
       <div id="carouselList" class="space-y-3"></div>
     </section>
 
-    <section data-panel="qr" class="hidden">
+<section data-panel="qr" class="hidden">
       <div class="mb-6">
         <h2 class="text-2xl font-black text-slate-900">Generator QR Code</h2>
         <p class="text-sm text-slate-500 mt-1">Khusus admin: buat QR code untuk tautan atau teks apa pun.</p>
@@ -242,12 +249,56 @@
 
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8">
         <label for="qrData" class="block text-sm font-bold text-slate-700 mb-2">Teks atau URL</label>
-        <input id="qrData" type="text" placeholder="contoh: https://mpk-site.vercel.app/struktur" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-slate-50 text-sm mb-5">
-        <button id="qrGenerate" type="button" class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition shadow-md shadow-indigo-500/30">
+        <input id="qrData" type="text" placeholder="contoh: https://mpk-site.vercel.app/struktur" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm mb-5">
+        <button id="qrGenerate" type="button" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
           <i class="fa-solid fa-qrcode"></i> Buat QR Code
         </button>
         <div id="qrResult" class="mt-8"></div>
       </div>
+    </section>
+
+    <section data-panel="sosial" class="hidden">
+      <div class="mb-6">
+        <h2 class="text-2xl font-black text-slate-900">Sosial Media MPK</h2>
+        <p class="text-sm text-slate-500 mt-1">Kelola akun sosial media resmi MPK yang tampil di halaman Sosial Media.</p>
+      </div>
+
+      <form id="socialForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
+        <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-plus text-navy mr-2"></i>Tambah Akun Sosial Media</h3>
+        <div class="grid md:grid-cols-2 gap-5 mb-5">
+          <div>
+            <label for="socialPlatform" class="block text-sm font-bold text-slate-700 mb-2">Platform <span class="text-rose-500">*</span></label>
+            <select id="socialPlatform" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="youtube">YouTube</option>
+              <option value="facebook">Facebook</option>
+              <option value="x">X (Twitter)</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="telegram">Telegram</option>
+              <option value="website">Website</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label for="socialUrutan" class="block text-sm font-bold text-slate-700 mb-2">Urutan</label>
+            <input id="socialUrutan" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+          </div>
+          <div>
+            <label for="socialNama" class="block text-sm font-bold text-slate-700 mb-2">Nama Akun <span class="text-rose-500">*</span></label>
+            <input id="socialNama" type="text" placeholder="contoh: @mpk.smp248jakarta" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+          </div>
+          <div>
+            <label for="socialUrl" class="block text-sm font-bold text-slate-700 mb-2">URL / Tautan <span class="text-rose-500">*</span></label>
+            <input id="socialUrl" type="url" placeholder="https://instagram.com/mpk.smp248jakarta" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+          </div>
+        </div>
+        <button id="socialSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
+          <i class="fa-solid fa-plus"></i> Tambah Akun
+        </button>
+      </form>
+
+      <div id="socialList" class="space-y-3"></div>
     </section>
   </main>
 

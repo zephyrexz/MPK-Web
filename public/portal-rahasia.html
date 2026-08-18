@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Admin - MPK SMPN 1 Nusantara</title>
+  <title>Portal Admin - MPK SMP Negeri 248 Jakarta</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
+    tailwind.config = { theme: { extend: { colors: { navy: '#1E3A8A', gold: '#FFD700' }, fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
   </script>
   <style>
     .fade-up { animation: fadeUp .7s ease both; }
@@ -21,15 +21,15 @@
 <body class="bg-slate-950 font-sans text-slate-100 antialiased" data-page="portal">
 
   <div class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
-    <div class="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-indigo-600/20 rounded-full blur-3xl"></div>
-    <div class="absolute -bottom-40 -right-40 w-[32rem] h-[32rem] bg-fuchsia-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-navy/20 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 -right-40 w-[32rem] h-[32rem] bg-gold/15 rounded-full blur-3xl"></div>
     <div class="absolute inset-0 opacity-[0.04]" style="background-image: linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px); background-size: 48px 48px;"></div>
 
     <div class="w-full max-w-md relative fade-up">
       <div class="text-center mb-8">
-        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-600 flex items-center justify-center text-2xl glow"><i class="fa-solid fa-user-shield"></i></div>
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-navy to-blue-800 flex items-center justify-center text-2xl glow"><i class="fa-solid fa-user-shield"></i></div>
         <h1 class="mt-5 text-2xl font-black">Portal Admin MPK</h1>
-        <p class="text-slate-400 text-sm mt-1">Akses terbatas untuk pengurus inti MPK SMPN 1 Nusantara</p>
+        <p class="text-slate-400 text-sm mt-1">Akses terbatas untuk pengurus inti MPK SMP Negeri 248 Jakarta</p>
       </div>
 
       <form id="loginForm" class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 glow">
@@ -37,19 +37,19 @@
           <i class="fa-solid fa-circle-exclamation mt-0.5"></i><span id="loginErrorText"></span>
         </div>
 
-        <label for="loginUsername" class="block text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-user mr-1.5 text-indigo-400"></i>Username</label>
+        <label for="loginUsername" class="block text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-user mr-1.5 text-gold"></i>Username</label>
         <div class="relative mb-5">
-          <input id="loginUsername" type="text" autocomplete="username" placeholder="Masukkan username admin" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-500">
+          <input id="loginUsername" type="text" autocomplete="username" placeholder="Masukkan username admin" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold placeholder:text-slate-500">
           <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
         </div>
 
-        <label for="loginPassword" class="block text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-lock mr-1.5 text-indigo-400"></i>Password</label>
+        <label for="loginPassword" class="block text-sm font-bold text-slate-300 mb-2"><i class="fa-solid fa-lock mr-1.5 text-gold"></i>Password</label>
         <div class="relative mb-7">
-          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Masukkan password" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-500">
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Masukkan password" class="w-full bg-slate-900/60 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold placeholder:text-slate-500">
           <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
         </div>
 
-        <button id="loginBtn" type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-bold px-6 py-4 rounded-xl hover:from-indigo-500 hover:to-fuchsia-500 hover:-translate-y-0.5 transition shadow-lg shadow-indigo-600/40">
+        <button id="loginBtn" type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-4 rounded-xl hover:from-blue-900 hover:to-blue-950 hover:-translate-y-0.5 transition shadow-lg shadow-navy/40">
           <i class="fa-solid fa-unlock"></i> Masuk
         </button>
       </form>
