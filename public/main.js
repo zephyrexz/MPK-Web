@@ -212,6 +212,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function logoSlotSize(slot, fallback) {
+    var own = String(slot.className || '').match(/(?:^|\s)(w-\d+ h-\d+)(?:\s|$)/);
+    if (own) return own[1];
     var child = slot.querySelector('div[class]');
     if (child) {
       var m = String(child.className).match(/(?:^|\s)(w-\d+ h-\d+)(?:\s|$)/);
@@ -220,9 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return fallback || 'w-9 h-9';
   }
 
-  function logoFallbackHtml(size) {
-    size = size || 'w-9 h-9';
-    return '<div class="' + size + ' rounded-xl bg-gradient-to-br from-navy to-blue-800 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-graduation-cap"></i></div>';
+  function logoSpacerHtml(size) {
+    return '<div class="' + (size || 'w-9 h-9') + '"></div>';
   }
 
   function fillLogoSlot(slot, url, size) {
@@ -230,9 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var img = slot.querySelector('[data-logo-img]');
     if (!url) {
       if (img) {
-        slot.innerHTML = logoFallbackHtml(size);
-      } else if (!slot.querySelector('.fa-graduation-cap')) {
-        slot.innerHTML = logoFallbackHtml(size);
+        slot.innerHTML = logoSpacerHtml(size);
       }
       return;
     }
@@ -241,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
         img.classList.add('opacity-0');
         img.setAttribute('src', url);
         img.onload = function () { img.classList.remove('opacity-0'); };
-        img.onerror = function () { slot.innerHTML = logoFallbackHtml(size); };
+        img.onerror = function () { slot.innerHTML = logoSpacerHtml(size); };
       }
       return;
     }
@@ -251,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
       img.classList.remove('opacity-0');
     };
     img.onerror = function () {
-      slot.innerHTML = logoFallbackHtml(size);
+      slot.innerHTML = logoSpacerHtml(size);
     };
   }
 
@@ -1155,14 +1154,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function nodePhoto(m, sizeClass) {
     var g = AVATAR_GRADIENTS[komisiIndex(m.komisi) % AVATAR_GRADIENTS.length];
     return m.foto
-      ? '<img src="' + escapeHtml(m.foto) + '" alt="Foto ' + escapeHtml(m.nama) + '" class="' + sizeClass + ' rounded-full object-cover border-2 border-gold/60 shadow-md">'
+      ? '<img src="' + escapeHtml(m.foto) + '" alt="Foto ' + escapeHtml(m.nama) + '" class="' + sizeClass + ' block rounded-full object-cover border-2 border-gold/60 shadow-md">'
       : '<div class="' + sizeClass + ' rounded-full bg-gradient-to-br ' + g + ' text-white flex items-center justify-center font-black text-lg shadow-md border-2 border-gold/60">' + initials(m.nama) + '</div>';
   }
 
   function treeNode(m) {
     return '' +
-      '<button type="button" data-member-id="' + m.id + '" class="group text-center w-40 sm:w-48 px-4 py-4 bg-white rounded-2xl border-2 border-navy/10 shadow-sm hover:shadow-xl hover:border-gold hover:-translate-y-1 transition-all duration-300 cursor-pointer">' +
-        '<div class="mx-auto mb-3">' + nodePhoto(m, 'w-14 h-14') + '</div>' +
+      '<button type="button" data-member-id="' + m.id + '" class="group text-center w-40 sm:w-48 max-w-full px-4 py-4 bg-white rounded-2xl border-2 border-navy/10 shadow-sm hover:shadow-xl hover:border-gold hover:-translate-y-1 transition-all duration-300 cursor-pointer">' +
+        '<div class="flex items-center justify-center mb-3">' + nodePhoto(m, 'w-14 h-14') + '</div>' +
         '<h3 class="font-extrabold text-slate-900 text-sm leading-tight group-hover:text-navy transition">' + escapeHtml(m.nama) + '</h3>' +
         '<p class="text-xs font-bold text-navy mt-1">' + escapeHtml(m.jabatan) + '</p>' +
         '<p class="text-[11px] text-slate-400 font-medium mt-0.5"><i class="fa-solid fa-school mr-1"></i>Kelas ' + escapeHtml(m.kelas) + '</p>' +
@@ -1172,7 +1171,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function emptyNode(label) {
     return '' +
-      '<div class="w-40 sm:w-48 px-4 py-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-center">' +
+      '<div class="w-40 sm:w-48 max-w-full px-4 py-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl text-center">' +
         '<div class="w-14 h-14 mx-auto mb-3 rounded-full bg-slate-100 text-slate-300 flex items-center justify-center text-lg"><i class="fa-solid fa-user-minus"></i></div>' +
         '<p class="text-xs font-bold text-slate-400">' + escapeHtml(label) + '</p>' +
         '<p class="text-[10px] text-slate-300 mt-1">Belum terisi</p>' +
@@ -1185,9 +1184,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (row.pair) {
       var left = members[0] || null;
       var right = members[1] || null;
-      nodes = '<div class="flex items-start justify-center gap-8">' +
+      nodes = '<div class="flex flex-wrap items-start justify-center gap-4 sm:gap-8">' +
           (left ? treeNode(left) : emptyNode(row.label + ' 1')) +
-          '<div class="self-center w-10 border-t-2 border-navy/30"></div>' +
+          '<div class="hidden sm:block self-center w-10 border-t-2 border-navy/30"></div>' +
           (right ? treeNode(right) : emptyNode(row.label + ' 2')) +
         '</div>';
       stemBelow = '<div class="flex justify-center mt-2"><div class="w-px h-8 bg-navy/30"></div></div>';
@@ -1391,12 +1390,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (url) {
           var cur = logoBox.querySelector('img');
           if (cur && cur.getAttribute('src') === url) return;
+          logoBox.classList.add('bg-transparent', 'border-transparent');
+          logoBox.classList.remove('bg-slate-50', 'border-dashed');
           logoBox.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Logo MPK" class="w-40 h-40 object-contain bg-transparent drop-shadow-lg mx-auto opacity-0 transition-opacity duration-300">';
           var img = logoBox.querySelector('img');
           img.onload = function () { img.classList.remove('opacity-0'); };
-          img.onerror = function () { logoBox.innerHTML = logoFallbackHtml('w-40 h-40'); };
+          img.onerror = function () {
+            logoBox.classList.remove('bg-transparent', 'border-transparent');
+            logoBox.classList.add('bg-slate-50', 'border-dashed');
+            logoBox.innerHTML = '';
+          };
         } else if (!logoBox.querySelector('img')) {
-          logoBox.innerHTML = logoFallbackHtml('w-40 h-40');
+          logoBox.innerHTML = '';
         }
       });
     }
@@ -1454,7 +1459,7 @@ document.addEventListener('DOMContentLoaded', function () {
           '<p class="absolute top-4 right-5 text-white text-xs font-semibold bg-gold text-navy rounded-full px-3 py-1 font-bold">ID: MPK-' + periode.split('/')[0] + '-' + String(m.id).padStart(3, '0') + '</p>' +
         '</div>' +
         '<div class="px-6 pb-8 -mt-14 text-center">' +
-          '<div class="w-28 h-28 mx-auto rounded-2xl bg-gradient-to-br ' + g + ' flex items-center justify-center overflow-hidden border-4 border-gold shadow-lg">' + photo + '</div>' +
+          '<div class="w-28 h-28 mx-auto -mt-16 rounded-2xl bg-gradient-to-br ' + g + ' relative z-10 flex items-center justify-center overflow-hidden border-4 border-gold shadow-lg">' + photo + '</div>' +
           '<h2 class="mt-4 text-2xl font-black text-slate-900">' + escapeHtml(m.nama) + '</h2>' +
           '<p class="text-navy font-bold">' + escapeHtml(m.jabatan) + '</p>' +
           '<div class="flex justify-center gap-2 mt-3 flex-wrap">' +

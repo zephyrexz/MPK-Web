@@ -16,9 +16,8 @@
   <style>
     .fade-up { animation: fadeUp .7s ease both; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: #eef2ff; }
-    ::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 8px; }
+    html, body { scrollbar-width: none; -ms-overflow-style: none; }
+    ::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased" data-page="struktur">
@@ -26,7 +25,7 @@
   <nav class="fixed top-3 inset-x-0 z-50 px-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between h-14 px-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg shadow-navy/10">
       <a href="/" class="flex items-center gap-2.5" data-logo-slot>
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-navy to-blue-800 text-white flex items-center justify-center shadow-md"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="w-9 h-9"></div>
         <div class="leading-tight">
           <p class="font-black text-navy">MPK</p>
           <p class="text-[10px] font-semibold text-slate-500">SMP Negeri 248 Jakarta</p>
@@ -77,7 +76,7 @@
     <div class="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-10">
       <div>
         <div class="flex items-center gap-2.5">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-navy to-blue-800 text-white flex items-center justify-center"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div data-logo-slot class="w-10 h-10 flex items-center justify-center"></div>
           <div class="leading-tight">
             <p class="font-black text-white">MPK</p>
             <p class="text-[11px] font-semibold text-slate-400">SMP Negeri 248 Jakarta</p>

@@ -13,9 +13,8 @@
     tailwind.config = { theme: { extend: { colors: { navy: '#1E3A8A', gold: '#FFD700' }, fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } } };
   </script>
   <style>
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: #eef2ff; }
-    ::-webkit-scrollbar-thumb { background: #818cf8; border-radius: 8px; }
+    html, body { scrollbar-width: none; -ms-overflow-style: none; }
+    ::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased" data-page="dashboard">
