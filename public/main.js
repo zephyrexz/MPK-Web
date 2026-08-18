@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
+  var API_BASE = '/api';
+
   // --- 1. ROUTE GUARD (SATPAM) ---
   if (window.location.pathname.includes('/dashboard')) {
     var token = localStorage.getItem('mpk_token');
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Memverifikasi...';
 
       try {
-        fetch('/api/login', {
+        fetch(API_BASE + '/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: username, password: password })
@@ -272,10 +274,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         var payload = { judul: judul, isi: isi, penting: penting };
         var method = 'POST';
-        var url = '/api/announcements';
+        var url = API_BASE + '/announcements';
         if (editingAnnouncementId) {
           method = 'PUT';
-          url = '/api/announcements/' + editingAnnouncementId;
+          url = API_BASE + '/announcements/' + editingAnnouncementId;
         }
         var btn = document.getElementById('pengumumanSubmit');
         btn.disabled = true;
@@ -324,10 +326,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         var payload = { nama: nama, kelas: kelas, jabatan: jabatan, komisi: komisi, foto: foto || null, motto: motto || null };
         var method = 'POST';
-        var url = '/api/members';
+        var url = API_BASE + '/members';
         if (editingMemberId) {
           method = 'PUT';
-          url = '/api/members/' + editingMemberId;
+          url = API_BASE + '/members/' + editingMemberId;
         }
         var btn = document.getElementById('anggotaSubmit');
         btn.disabled = true;
@@ -393,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('aspirasiList');
     if (!container) return;
     try {
-      apiFetch('/api/aspirasi')
+      apiFetch(API_BASE + '/aspirasi')
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); throw new Error('Sesi berakhir'); }
           if (!res.ok) throw new Error('Gagal memuat aspirasi');
@@ -473,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function updateAspirasiStatus(id, status) {
     try {
-      apiFetch('/api/aspirasi/' + id, {
+      apiFetch(API_BASE + '/aspirasi/' + id, {
         method: 'PATCH',
         body: JSON.stringify({ status: status })
       })
@@ -496,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function deleteAspirasi(id) {
     if (!window.confirm('Hapus aspirasi ini? Tindakan ini tidak bisa dibatalkan.')) return;
     try {
-      apiFetch('/api/aspirasi/' + id, { method: 'DELETE' })
+      apiFetch(API_BASE + '/aspirasi/' + id, { method: 'DELETE' })
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); return; }
           if (!res.ok) throw new Error('Gagal menghapus');
@@ -514,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('pengumumanList');
     if (!container) return;
     try {
-      apiFetch('/api/announcements')
+      apiFetch(API_BASE + '/announcements')
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); throw new Error('Sesi berakhir'); }
           if (!res.ok) throw new Error('Gagal memuat pengumuman');
@@ -571,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function editAnnouncement(id) {
     try {
-      apiFetch('/api/announcements')
+      apiFetch(API_BASE + '/announcements')
         .then(function (res) {
           return res.ok ? res.json() : [];
         })
@@ -603,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function deleteAnnouncement(id) {
     if (!window.confirm('Hapus pengumuman ini? Tindakan ini tidak bisa dibatalkan.')) return;
     try {
-      apiFetch('/api/announcements/' + id, { method: 'DELETE' })
+      apiFetch(API_BASE + '/announcements/' + id, { method: 'DELETE' })
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); return; }
           if (!res.ok) throw new Error('Gagal menghapus');
@@ -621,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('anggotaList');
     if (!container) return;
     try {
-      apiFetch('/api/members')
+      apiFetch(API_BASE + '/members')
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); throw new Error('Sesi berakhir'); }
           if (!res.ok) throw new Error('Gagal memuat anggota');
@@ -677,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function editMember(id) {
     try {
-      apiFetch('/api/members')
+      apiFetch(API_BASE + '/members')
         .then(function (res) {
           return res.ok ? res.json() : [];
         })
@@ -712,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function deleteMember(id) {
     if (!window.confirm('Hapus anggota ini? Tindakan ini tidak bisa dibatalkan.')) return;
     try {
-      apiFetch('/api/members/' + id, { method: 'DELETE' })
+      apiFetch(API_BASE + '/members/' + id, { method: 'DELETE' })
         .then(function (res) {
           if (res.status === 401) { handleUnauthorized(); return; }
           if (!res.ok) throw new Error('Gagal menghapus');
@@ -730,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('announcementsContainer');
     if (!container) return;
     try {
-      fetch('/api/announcements')
+      fetch(API_BASE + '/announcements')
         .then(function (res) {
           if (!res.ok) throw new Error('Gagal memuat pengumuman');
           return res.json();
@@ -768,7 +770,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('strukturContainer');
     if (!container) return;
     try {
-      fetch('/api/members')
+      fetch(API_BASE + '/members')
         .then(function (res) {
           if (!res.ok) throw new Error('Gagal memuat anggota');
           return res.json();
@@ -855,7 +857,7 @@ document.addEventListener('DOMContentLoaded', function () {
       };
 
       try {
-        fetch('/api/aspirasi', {
+        fetch(API_BASE + '/aspirasi', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -909,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function () {
       renderIdCard(member, card);
     };
     try {
-      fetch('/api/members')
+      fetch(API_BASE + '/members')
         .then(function (res) {
           if (!res.ok) throw new Error('Gagal memuat anggota');
           return res.json();
