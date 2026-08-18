@@ -1,12 +1,3 @@
 {
-  "version": 2,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/main.py" },
-    { "source": "/docs", "destination": "/api/main.py" },
-    { "source": "/redoc", "destination": "/api/main.py" },
-    { "source": "/portal-rahasia", "destination": "/public/portal-rahasia.html" },
-    { "source": "/dashboard", "destination": "/public/dashboard.html" },
-    { "source": "/struktur", "destination": "/public/struktur.html" },
-    { "source": "/aspirasi", "destination": "/public/aspirasi.html" }
-  ]
+
 }
