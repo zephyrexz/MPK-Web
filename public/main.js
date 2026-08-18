@@ -856,35 +856,39 @@ document.addEventListener('DOMContentLoaded', function () {
         pesan: pesan
       };
 
-      try {
-        fetch(API_BASE + '/aspirasi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+      fetch(API_BASE + '/aspirasi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          if (!res.ok) {
+            return res.json()
+              .then(function (body) {
+                var detail = (body && body.detail) ? String(body.detail) : 'Gagal mengirim (HTTP ' + res.status + ')';
+                throw new Error(detail);
+              })
+              .catch(function (err) {
+                if (err instanceof Error && err.message) throw err;
+                throw new Error('Gagal mengirim (HTTP ' + res.status + ')');
+              });
+          }
+          return res.json();
         })
-          .then(function (res) {
-            if (!res.ok) throw new Error('Gagal mengirim');
-            return res.json();
-          })
-          .then(function () {
-            form.reset();
-            successBox.classList.remove('hidden');
-            successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          })
-          .catch(function () {
-            errorBox.classList.remove('hidden');
-            errorBox.textContent = 'Terjadi kesalahan koneksi. Coba lagi beberapa saat.';
-          })
-          .finally(function () {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
-          });
-      } catch (err) {
-        errorBox.classList.remove('hidden');
-        errorBox.textContent = 'Terjadi kesalahan. Coba lagi.';
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
-      }
+        .then(function () {
+          form.reset();
+          successBox.classList.remove('hidden');
+          successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        })
+        .catch(function (err) {
+          console.error('Kirim aspirasi gagal:', err);
+          errorBox.classList.remove('hidden');
+          errorBox.textContent = (err && err.message) ? err.message : 'Terjadi kesalahan koneksi. Coba lagi beberapa saat.';
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kirim Aspirasi';
+        });
     });
   }
 
