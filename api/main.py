@@ -14,7 +14,7 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql://postgres:mpk%402026hebat@db.ajitvosbvdccuxpbfadr.supabase.co:5432/postgres",
 )
-JWT_SECRET = os.getenv("JWT_SECRET", "mpk_smpn1_nusantara_super_secret_2026")
+JWT_SECRET = os.getenv("JWT_SECRET", "V++9OqCkNjnCKlZli2WD+2vF+NPyTeAswOBU1mx38weGl+40SfpCHqUIo2wcMp6CuMOq9c7KAUeK1UQqfdpVNw==")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRES_HOURS = 12
 ADMIN_USERNAME = "admin_mpk"
