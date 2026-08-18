@@ -1,10 +1,12 @@
 import os
+import re
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -25,6 +27,43 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 720
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin_mpk")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "SecurePassword123")
+
+# --- Konfigurasi Supabase Storage ---
+SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+SUPABASE_STORAGE_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "mpk-storage")
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+ALLOWED_UPLOAD_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+ALLOWED_UPLOAD_TYPES = {"image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"}
+
+_supabase_client = None
+
+
+def get_supabase_client():
+    """Lazy client Supabase Storage (service role). None jika belum dikonfigurasi."""
+    global _supabase_client
+    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+        return None
+    if _supabase_client is None:
+        try:
+            from supabase import create_client
+
+            _supabase_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        except Exception as exc:
+            print("FATAL SUPABASE CLIENT ERROR:", exc)
+            _supabase_client = None
+    return _supabase_client
+
+
+def sanitize_filename(original: str) -> str:
+    """Nama file aman + timestamp unik untuk mencegah tabrakan nama."""
+    name, ext = os.path.splitext(original or "gambar")
+    name = re.sub(r"[^a-zA-Z0-9_-]", "", name).strip("_-") or "gambar"
+    ext = (ext or "").lower()
+    if ext not in ALLOWED_UPLOAD_EXT:
+        ext = ".png"
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    return f"{name[:40]}_{stamp}_{uuid.uuid4().hex[:8]}{ext}"
 
 # Konfigurasi Engine Database dengan penanganan aman untuk Serverless
 engine_kwargs = {
@@ -119,6 +158,7 @@ class SocialMedia(Base):
     platform = Column(String(50), nullable=False)
     nama = Column(String(100), nullable=False)
     url = Column(String(500), nullable=False)
+    icon_url = Column(String(500), nullable=True)
     urutan = Column(Integer, nullable=False, default=0, server_default=text("0"))
 
 
@@ -230,6 +270,7 @@ class SocialMediaCreate(BaseModel):
     platform: str
     nama: str
     url: str
+    icon_url: Optional[str] = None
     urutan: int = 0
 
 
@@ -281,6 +322,12 @@ def ensure_tables(db) -> None:
             db.execute(text("ALTER TABLE members ADD COLUMN periode VARCHAR(20) DEFAULT '2026/2027'"))
             db.commit()
             print("Migrasi: kolom members.periode ditambahkan")
+        except SQLAlchemyError:
+            db.rollback()
+        try:
+            db.execute(text("ALTER TABLE social_media ADD COLUMN icon_url VARCHAR(500)"))
+            db.commit()
+            print("Migrasi: kolom social_media.icon_url ditambahkan")
         except SQLAlchemyError:
             db.rollback()
         if not db.query(AboutContent).first():
@@ -734,6 +781,7 @@ def list_social(db=Depends(get_db)):
         rows = db.query(SocialMedia).order_by(SocialMedia.urutan, SocialMedia.id).all()
         for s in rows:
             s.nama = s.nama or ""
+            s.icon_url = s.icon_url or ""
         return rows
     except Exception as exc:
         print("GET SOCIAL ERROR:", exc)
@@ -791,3 +839,47 @@ def delete_social(social_id: int, db=Depends(get_db), auth: dict = Depends(requi
         db.rollback()
         print("DELETE SOCIAL ERROR:", exc)
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# --- UPLOAD GAMBAR KE SUPABASE STORAGE ---
+@app.post("/upload")
+@app.post("/api/upload")
+async def upload_image(file: UploadFile = File(...), auth: dict = Depends(require_auth)):
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="File yang diunggah kosong")
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Ukuran file maksimal 5 MB")
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_UPLOAD_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Jenis file tidak diizinkan ({content_type or 'tidak dikenal'}). Gunakan PNG, JPG, WEBP, GIF, atau SVG.",
+        )
+    client = get_supabase_client()
+    if client is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Penyimpanan file belum dikonfigurasi. Admin: atur SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY pada environment Vercel, lalu coba lagi.",
+        )
+    filename = sanitize_filename(file.filename or "gambar")
+    folder = datetime.now(timezone.utc).strftime("%Y/%m")
+    path = f"{folder}/{filename}"
+    try:
+        try:
+            client.storage.get_bucket(SUPABASE_STORAGE_BUCKET)
+        except Exception:
+            client.storage.create_bucket(SUPABASE_STORAGE_BUCKET, options={"public": True})
+        client.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
+            path,
+            data,
+            {"content-type": content_type, "upsert": "true"},
+        )
+        public_url = client.storage.from_(SUPABASE_STORAGE_BUCKET).get_public_url(path)
+        print(f"UPLOAD OK: {public_url}")
+        return {"url": public_url, "path": path, "bucket": SUPABASE_STORAGE_BUCKET}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        print("UPLOAD ERROR:", exc)
+        raise HTTPException(status_code=500, detail=f"Gagal mengunggah ke Supabase Storage: {exc}")

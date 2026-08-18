@@ -144,8 +144,15 @@
             <input id="anggotaPeriode" type="text" placeholder="contoh: 2026/2027 (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
           </div>
           <div class="md:col-span-2">
-            <label for="anggotaFoto" class="block text-sm font-bold text-slate-700 mb-2">Foto (URL)</label>
-            <input id="anggotaFoto" type="url" placeholder="https://contoh.com/foto.jpg (opsional)" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+            <label for="anggotaFoto" class="block text-sm font-bold text-slate-700 mb-2">Foto</label>
+            <div class="flex gap-2">
+              <input id="anggotaFoto" type="url" placeholder="https://contoh.com/foto.jpg (opsional)" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+              <button type="button" data-upload-target="anggotaFoto" class="shrink-0 inline-flex items-center gap-2 bg-navy text-white font-bold px-4 rounded-xl hover:bg-blue-900 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Unggah
+              </button>
+              <input type="file" accept="image/*" data-upload-input="anggotaFoto" class="hidden">
+            </div>
+            <p class="mt-1 text-xs text-slate-400">Pilih "Unggah" untuk mengirim foto langsung ke penyimpanan, atau tempel URL manual.</p>
           </div>
           <div class="md:col-span-2">
             <label for="anggotaMotto" class="block text-sm font-bold text-slate-700 mb-2">Motto</label>
@@ -174,9 +181,15 @@
       <form id="logoForm" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 mb-8">
         <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-image text-navy mr-2"></i>Logo MPK (URL)</h3>
         <div class="mb-5">
-          <label for="logoUrl" class="block text-sm font-bold text-slate-700 mb-2">URL Gambar Logo</label>
-          <input id="logoUrl" type="url" placeholder="https://contoh.com/logo-mpk.png" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
-          <p class="mt-2 text-xs text-slate-400">Logo akan langsung tampil di navbar semua halaman situs. Kosongkan untuk memakai ikon bawaan.</p>
+          <label for="logoUrl" class="block text-sm font-bold text-slate-700 mb-2">Gambar Logo</label>
+          <div class="flex gap-2">
+            <input id="logoUrl" type="url" placeholder="https://contoh.com/logo-mpk.png" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+            <button type="button" data-upload-target="logoUrl" class="shrink-0 inline-flex items-center gap-2 bg-navy text-white font-bold px-4 rounded-xl hover:bg-blue-900 transition">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Unggah
+            </button>
+            <input type="file" accept="image/*" data-upload-input="logoUrl" class="hidden">
+          </div>
+          <p class="mt-2 text-xs text-slate-400">Unggah logo langsung ke penyimpanan, atau tempel URL manual. Logo akan tampil di navbar semua halaman situs. Kosongkan untuk memakai ikon bawaan.</p>
         </div>
         <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">
           <i class="fa-solid fa-floppy-disk"></i> Simpan Logo
@@ -217,8 +230,15 @@
         <h3 class="font-black text-slate-900 mb-6"><i class="fa-solid fa-plus text-navy mr-2"></i>Tambah Gambar Galeri</h3>
         <div class="grid md:grid-cols-2 gap-5 mb-5">
           <div class="md:col-span-2">
-            <label for="carouselImageUrl" class="block text-sm font-bold text-slate-700 mb-2">URL Gambar <span class="text-rose-500">*</span></label>
-            <input id="carouselImageUrl" type="url" placeholder="https://contoh.com/foto-kegiatan.jpg" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+            <label for="carouselImageUrl" class="block text-sm font-bold text-slate-700 mb-2">Gambar <span class="text-rose-500">*</span></label>
+            <div class="flex gap-2">
+              <input id="carouselImageUrl" type="url" placeholder="https://contoh.com/foto-kegiatan.jpg" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+              <button type="button" data-upload-target="carouselImageUrl" class="shrink-0 inline-flex items-center gap-2 bg-navy text-white font-bold px-4 rounded-xl hover:bg-blue-900 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Unggah
+              </button>
+              <input type="file" accept="image/*" data-upload-input="carouselImageUrl" class="hidden">
+            </div>
+            <p class="mt-1 text-xs text-slate-400">Unggah foto kegiatan langsung ke penyimpanan, atau tempel URL manual.</p>
           </div>
           <div>
             <label for="carouselTitle" class="block text-sm font-bold text-slate-700 mb-2">Judul <span class="text-rose-500">*</span></label>
@@ -291,6 +311,17 @@
           <div>
             <label for="socialUrl" class="block text-sm font-bold text-slate-700 mb-2">URL / Tautan <span class="text-rose-500">*</span></label>
             <input id="socialUrl" type="url" placeholder="https://instagram.com/mpk.smp248jakarta" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+          </div>
+          <div class="md:col-span-2">
+            <label for="socialIconUrl" class="block text-sm font-bold text-slate-700 mb-2">Ikon Kustom (opsional)</label>
+            <div class="flex gap-2">
+              <input id="socialIconUrl" type="url" placeholder="https://contoh.com/ikon.png" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold bg-slate-50 text-sm">
+              <button type="button" data-upload-target="socialIconUrl" class="shrink-0 inline-flex items-center gap-2 bg-navy text-white font-bold px-4 rounded-xl hover:bg-blue-900 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Unggah
+              </button>
+              <input type="file" accept="image/*" data-upload-input="socialIconUrl" class="hidden">
+            </div>
+            <p class="mt-1 text-xs text-slate-400">Kosongkan untuk memakai ikon bawaan platform. Ikon kustom lebih dulu digunakan jika diisi.</p>
           </div>
         </div>
         <button id="socialSubmit" type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-navy to-blue-800 text-white font-bold px-6 py-3 rounded-xl hover:from-navy hover:to-blue-900 transition shadow-md shadow-navy/30">

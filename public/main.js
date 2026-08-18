@@ -427,6 +427,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initTabs();
     bindAdminForms();
     bindDashboardForms();
+    initUploadButtons();
     loadAspirasiAdmin();
     loadAnnouncementsAdmin();
     loadMembersAdmin();
@@ -1606,12 +1607,86 @@ document.addEventListener('DOMContentLoaded', function () {
       '<p class="text-center text-xs text-slate-400 mt-3">Scan untuk membuka: ' + escapeHtml(data) + '</p>';
   }
 
-  // --- 3.6 SOSIAL MEDIA ---
+  // --- 3.6 UPLOAD GAMBAR KE SUPABASE STORAGE ---
+  function uploadImageFile(file, targetId) {
+    var input = document.getElementById(targetId);
+    if (!input) return;
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Ukuran file maksimal 5 MB.', 'error');
+      return;
+    }
+    if (file.type.indexOf('image/') !== 0) {
+      showToast('File harus berupa gambar.', 'error');
+      return;
+    }
+    var fd = new FormData();
+    fd.append('file', file);
+    var btn = document.querySelector('[data-upload-target="' + targetId + '"]');
+    var origHtml = btn ? btn.innerHTML : '';
+    var origDisabled = btn ? btn.disabled : false;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengunggah...';
+    }
+    var headers = {};
+    var token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    fetch(API_BASE + '/upload', { method: 'POST', headers: headers, body: fd })
+      .then(function (res) {
+        if (res.status === 401) { handleUnauthorized(); return null; }
+        if (res.status === 503) {
+          showToast('Penyimpanan file belum dikonfigurasi di server.', 'error');
+          return null;
+        }
+        if (!res.ok) throw new Error('Gagal mengunggah');
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.url) {
+          input.value = data.url;
+          showToast('Gambar berhasil diunggah.', 'success');
+        }
+      })
+      .catch(function (err) {
+        showToast('Gagal mengunggah file. Coba lagi.', 'error');
+        console.error('UPLOAD ERROR:', err);
+      })
+      .finally(function () {
+        if (btn) {
+          btn.disabled = origDisabled;
+          btn.innerHTML = origHtml;
+        }
+      });
+  }
+
+  function initUploadButtons() {
+    document.querySelectorAll('[data-upload-input]').forEach(function (fileInput) {
+      fileInput.addEventListener('change', function () {
+        if (fileInput.files && fileInput.files.length) {
+          uploadImageFile(fileInput.files[0], fileInput.getAttribute('data-upload-input'));
+          fileInput.value = '';
+        }
+      });
+    });
+    document.querySelectorAll('[data-upload-target]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = btn.getAttribute('data-upload-target');
+        var fileInput = document.querySelector('[data-upload-input="' + target + '"]');
+        if (fileInput) fileInput.click();
+      });
+    });
+  }
+
+  // --- 3.7 SOSIAL MEDIA ---
   function socialCard(s) {
     var meta = socialPlatform(s.platform);
+    var iconBox = s.icon_url
+      ? '<img src="' + escapeHtml(s.icon_url) + '" alt="' + escapeHtml(s.nama) + '" class="w-16 h-16 rounded-2xl object-contain bg-transparent mb-4 group-hover:scale-110 transition-transform duration-300" loading="lazy">'
+      : '<div class="w-16 h-16 rounded-2xl ' + meta.color + ' text-white flex items-center justify-center text-2xl shadow-md mb-4 group-hover:scale-110 transition-transform duration-300"><i class="' + meta.icon + '"></i></div>';
     return '' +
       '<a href="' + escapeHtml(s.url) + '" target="_blank" rel="noopener noreferrer" class="group bg-white rounded-2xl border border-navy/10 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-gold transition-all duration-300 p-6 flex flex-col items-center text-center">' +
-        '<div class="w-16 h-16 rounded-2xl ' + meta.color + ' text-white flex items-center justify-center text-2xl shadow-md mb-4 group-hover:scale-110 transition-transform duration-300"><i class="' + meta.icon + '"></i></div>' +
+        iconBox +
         '<h3 class="font-extrabold text-slate-900 group-hover:text-navy transition">' + escapeHtml(s.nama) + '</h3>' +
         '<p class="text-xs font-bold text-navy mt-1 uppercase tracking-wide">' + escapeHtml(s.platform) + '</p>' +
         '<p class="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-gold"><i class="fa-solid fa-arrow-up-right-from-square"></i>Kunjungi Akun</p>' +
@@ -1651,9 +1726,12 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           container.innerHTML = items.map(function (s) {
             var meta = socialPlatform(s.platform);
+            var iconBox = s.icon_url
+              ? '<img src="' + escapeHtml(s.icon_url) + '" alt="' + escapeHtml(s.nama) + '" class="w-11 h-11 shrink-0 rounded-xl object-contain bg-transparent" loading="lazy">'
+              : '<div class="w-11 h-11 shrink-0 rounded-xl ' + meta.color + ' text-white flex items-center justify-center text-lg"><i class="' + meta.icon + '"></i></div>';
             return '' +
               '<div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">' +
-                '<div class="w-11 h-11 shrink-0 rounded-xl ' + meta.color + ' text-white flex items-center justify-center text-lg"><i class="' + meta.icon + '"></i></div>' +
+                iconBox +
                 '<div class="min-w-0 flex-1">' +
                   '<p class="font-bold text-slate-900 truncate">' + escapeHtml(s.nama) + '</p>' +
                   '<p class="text-xs text-slate-400 truncate">' + escapeHtml(s.platform) + ' • Urutan: ' + Number(s.urutan || 0) + '</p>' +
@@ -1686,6 +1764,7 @@ document.addEventListener('DOMContentLoaded', function () {
       platform: get('socialPlatform'),
       nama: get('socialNama'),
       url: get('socialUrl'),
+      icon_url: get('socialIconUrl'),
       urutan: Number(get('socialUrutan')) || 0
     };
     if (!payload.platform || !payload.nama || !payload.url) {
@@ -1729,6 +1808,7 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById('socialPlatform').value = item.platform;
           document.getElementById('socialNama').value = item.nama;
           document.getElementById('socialUrl').value = item.url;
+          document.getElementById('socialIconUrl').value = item.icon_url || '';
           document.getElementById('socialUrutan').value = Number(item.urutan || 0);
           document.getElementById('socialSubmit').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan';
           window.scrollTo({ top: 0, behavior: 'smooth' });
