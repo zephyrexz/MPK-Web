@@ -143,6 +143,25 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    return {
+        "nama": "MPK SMPN 1 Nusantara API",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
+
+
+@app.get("/api")
+def api_info():
+    return {
+        "status": "ok",
+        "nama": "MPK SMPN 1 Nusantara API",
+        "login": "POST /api/login",
+        "health": "GET /api/health",
+    }
+
+
 def get_db():
     if SessionLocal is None:
         raise HTTPException(status_code=503, detail="Database tidak tersedia")
