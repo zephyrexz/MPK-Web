@@ -6,6 +6,8 @@ import jwt
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -335,4 +337,19 @@ def delete_aspirasi(aspirasi_id: int, db=Depends(get_db), auth: dict = Depends(r
 
 
 app.include_router(router, prefix="/api")
-app.include_router(router, prefix="", include_in_schema=False)
+
+PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public")
+
+
+@app.get("/{path}")
+def clean_page(path: str):
+    if ".." in path or "\x00" in path:
+        raise HTTPException(status_code=404, detail="Halaman tidak ditemukan")
+    candidates = [os.path.join(PUBLIC_DIR, path), os.path.join(PUBLIC_DIR, path + ".html")]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return FileResponse(candidate)
+    raise HTTPException(status_code=404, detail="Halaman tidak ditemukan")
+
+
+app.mount("/", StaticFiles(directory=PUBLIC_DIR, html=True), name="static")

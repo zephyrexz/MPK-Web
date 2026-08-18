@@ -1,14 +1,3 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/main.py", "use": "@vercel/python" }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/main.py" },
-    { "src": "/docs", "dest": "/api/main.py" },
-    { "src": "/redoc", "dest": "/api/main.py" },
-    { "src": "/portal-rahasia", "dest": "/public/portal-rahasia.html" },
-    { "src": "/dashboard", "dest": "/public/dashboard.html" },
-    { "src": "/(.*)", "dest": "/public/$1" }
-  ]
+  "cleanUrls": true
 }
