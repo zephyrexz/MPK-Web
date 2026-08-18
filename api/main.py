@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -50,7 +50,7 @@ class Member(Base):
     nama = Column(String(100), nullable=False)
     kelas = Column(String(10), nullable=False)
     jabatan = Column(String(100), nullable=False)
-    komisi = Column(String(100), nullable=False, default="Pengurus Inti")
+    komisi = Column(String(100), nullable=False, default="Pengurus Inti", server_default=text("'Pengurus Inti'"))
     foto = Column(String(500), nullable=True)
     motto = Column(String(255), nullable=True)
 
@@ -60,7 +60,12 @@ class Announcement(Base):
     id = Column(Integer, primary_key=True, index=True)
     judul = Column(String(200), nullable=False)
     isi = Column(Text, nullable=False)
-    tanggal = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    tanggal = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=text("now()"),
+    )
     penting = Column(Boolean, default=False)
 
 
@@ -72,7 +77,12 @@ class Aspirasi(Base):
     kategori = Column(String(50), nullable=False)
     pesan = Column(Text, nullable=False)
     status = Column(String(20), default="Baru")
-    dibuat_pada = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    dibuat_pada = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=text("now()"),
+    )
 
 
 try:
@@ -179,9 +189,10 @@ def create_token(username: str) -> str:
 
 
 def require_auth(authorization: str = Header(default="")) -> dict:
-    if not authorization.startswith("Bearer "):
+    parts = authorization.split(" ", 1)
+    if len(parts) != 2 or parts[0] != "Bearer" or not parts[1].strip():
         raise HTTPException(status_code=401, detail="Token tidak ditemukan")
-    token = authorization.split(" ", 1)[1]
+    token = parts[1].strip()
     try:
         payload = jwt.decode(token, jwt_secret, algorithms=[ALGORITHM])
     except jwt.ExpiredSignatureError:
@@ -209,7 +220,15 @@ def login(data: LoginRequest):
 
 @router.get("/members", response_model=List[MemberOut])
 def list_members(db=Depends(get_db)):
-    return db.query(Member).order_by(Member.komisi, Member.id).all()
+    members = db.query(Member).order_by(Member.komisi, Member.id).all()
+    for member in members:
+        if not member.komisi:
+            member.komisi = "Pengurus Inti"
+        if member.foto is None:
+            member.foto = ""
+        if member.motto is None:
+            member.motto = ""
+    return members
 
 
 @router.post("/members", response_model=MemberOut)
@@ -247,7 +266,11 @@ def delete_member(member_id: int, db=Depends(get_db), auth: dict = Depends(requi
 
 @router.get("/announcements", response_model=List[AnnouncementOut])
 def list_announcements(db=Depends(get_db)):
-    return db.query(Announcement).order_by(Announcement.tanggal.desc()).all()
+    announcements = db.query(Announcement).order_by(Announcement.tanggal.desc()).all()
+    for announcement in announcements:
+        if announcement.tanggal is None:
+            announcement.tanggal = datetime.now(timezone.utc)
+    return announcements
 
 
 @router.post("/announcements", response_model=AnnouncementOut)
@@ -292,7 +315,11 @@ def delete_announcement(
 
 @router.get("/aspirasi", response_model=List[AspirasiOut])
 def list_aspirasi(db=Depends(get_db), auth: dict = Depends(require_auth)):
-    return db.query(Aspirasi).order_by(Aspirasi.dibuat_pada.desc()).all()
+    aspirasi_list = db.query(Aspirasi).order_by(Aspirasi.dibuat_pada.desc()).all()
+    for item in aspirasi_list:
+        if item.dibuat_pada is None:
+            item.dibuat_pada = datetime.now(timezone.utc)
+    return aspirasi_list
 
 
 @router.post("/aspirasi", response_model=AspirasiOut)
