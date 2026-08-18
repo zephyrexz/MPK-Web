@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine
@@ -132,7 +132,14 @@ class AspirasiStatusUpdate(BaseModel):
     status: str
 
 
-app = FastAPI(title="MPK SMPN 1 Nusantara API", version="1.0.0")
+app = FastAPI(
+    title="MPK SMPN 1 Nusantara API",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+router = APIRouter()
 
 app.add_middleware(
     CORSMiddleware,
@@ -144,22 +151,13 @@ app.add_middleware(
 
 
 @app.get("/")
-def root():
-    return {
-        "nama": "MPK SMPN 1 Nusantara API",
-        "docs": "/docs",
-        "health": "/api/health",
-    }
+def read_root():
+    return {"status": "online", "message": "API MPK SMPN 1 Nusantara"}
 
 
 @app.get("/api")
-def api_info():
-    return {
-        "status": "ok",
-        "nama": "MPK SMPN 1 Nusantara API",
-        "login": "POST /api/login",
-        "health": "GET /api/health",
-    }
+def api_root():
+    return {"status": "online", "message": "API MPK SMPN 1 Nusantara", "docs": "/docs"}
 
 
 def get_db():
@@ -193,7 +191,7 @@ def require_auth(authorization: str = Header(default="")) -> dict:
     return payload
 
 
-@app.get("/api/health")
+@router.get("/health")
 def health():
     return {
         "status": "ok",
@@ -202,19 +200,19 @@ def health():
     }
 
 
-@app.post("/api/login")
+@router.post("/login")
 def login(data: LoginRequest):
     if data.username == ADMIN_USERNAME and data.password == ADMIN_PASSWORD:
         return {"token": create_token(data.username), "message": "Login berhasil"}
     raise HTTPException(status_code=401, detail="Username atau password salah")
 
 
-@app.get("/api/members", response_model=List[MemberOut])
+@router.get("/members", response_model=List[MemberOut])
 def list_members(db=Depends(get_db)):
     return db.query(Member).order_by(Member.komisi, Member.id).all()
 
 
-@app.post("/api/members", response_model=MemberOut)
+@router.post("/members", response_model=MemberOut)
 def create_member(data: MemberCreate, db=Depends(get_db), auth: dict = Depends(require_auth)):
     member = Member(**data.model_dump())
     db.add(member)
@@ -223,7 +221,7 @@ def create_member(data: MemberCreate, db=Depends(get_db), auth: dict = Depends(r
     return member
 
 
-@app.put("/api/members/{member_id}", response_model=MemberOut)
+@router.put("/members/{member_id}", response_model=MemberOut)
 def update_member(
     member_id: int, data: MemberCreate, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
@@ -237,7 +235,7 @@ def update_member(
     return member
 
 
-@app.delete("/api/members/{member_id}")
+@router.delete("/members/{member_id}")
 def delete_member(member_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
     member = db.query(Member).filter(Member.id == member_id).first()
     if not member:
@@ -247,12 +245,12 @@ def delete_member(member_id: int, db=Depends(get_db), auth: dict = Depends(requi
     return {"message": "Anggota berhasil dihapus"}
 
 
-@app.get("/api/announcements", response_model=List[AnnouncementOut])
+@router.get("/announcements", response_model=List[AnnouncementOut])
 def list_announcements(db=Depends(get_db)):
     return db.query(Announcement).order_by(Announcement.tanggal.desc()).all()
 
 
-@app.post("/api/announcements", response_model=AnnouncementOut)
+@router.post("/announcements", response_model=AnnouncementOut)
 def create_announcement(
     data: AnnouncementCreate, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
@@ -263,7 +261,7 @@ def create_announcement(
     return announcement
 
 
-@app.put("/api/announcements/{announcement_id}", response_model=AnnouncementOut)
+@router.put("/announcements/{announcement_id}", response_model=AnnouncementOut)
 def update_announcement(
     announcement_id: int,
     data: AnnouncementCreate,
@@ -280,7 +278,7 @@ def update_announcement(
     return announcement
 
 
-@app.delete("/api/announcements/{announcement_id}")
+@router.delete("/announcements/{announcement_id}")
 def delete_announcement(
     announcement_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)
 ):
@@ -292,12 +290,12 @@ def delete_announcement(
     return {"message": "Pengumuman berhasil dihapus"}
 
 
-@app.get("/api/aspirasi", response_model=List[AspirasiOut])
+@router.get("/aspirasi", response_model=List[AspirasiOut])
 def list_aspirasi(db=Depends(get_db), auth: dict = Depends(require_auth)):
     return db.query(Aspirasi).order_by(Aspirasi.dibuat_pada.desc()).all()
 
 
-@app.post("/api/aspirasi", response_model=AspirasiOut)
+@router.post("/aspirasi", response_model=AspirasiOut)
 def create_aspirasi(data: AspirasiCreate, db=Depends(get_db)):
     if not data.nama or not data.kelas or not data.pesan:
         raise HTTPException(status_code=400, detail="Nama, kelas, dan pesan wajib diisi")
@@ -308,7 +306,7 @@ def create_aspirasi(data: AspirasiCreate, db=Depends(get_db)):
     return aspirasi
 
 
-@app.patch("/api/aspirasi/{aspirasi_id}", response_model=AspirasiOut)
+@router.patch("/aspirasi/{aspirasi_id}", response_model=AspirasiOut)
 def update_aspirasi_status(
     aspirasi_id: int,
     data: AspirasiStatusUpdate,
@@ -326,7 +324,7 @@ def update_aspirasi_status(
     return aspirasi
 
 
-@app.delete("/api/aspirasi/{aspirasi_id}")
+@router.delete("/aspirasi/{aspirasi_id}")
 def delete_aspirasi(aspirasi_id: int, db=Depends(get_db), auth: dict = Depends(require_auth)):
     aspirasi = db.query(Aspirasi).filter(Aspirasi.id == aspirasi_id).first()
     if not aspirasi:
@@ -334,3 +332,7 @@ def delete_aspirasi(aspirasi_id: int, db=Depends(get_db), auth: dict = Depends(r
     db.delete(aspirasi)
     db.commit()
     return {"message": "Aspirasi berhasil dihapus"}
+
+
+app.include_router(router, prefix="/api")
+app.include_router(router, prefix="", include_in_schema=False)
