@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  var routePage = document.body.getAttribute('data-page');
+  if (routePage === 'dashboard' && !localStorage.getItem('mpk_token')) {
+    alert('Akses Ditolak! Anda harus login terlebih dahulu.');
+    window.location.href = '/portal-rahasia.html';
+    return;
+  }
+
   var DEMO_MEMBERS = [
     { id: 1, nama: 'Raka Pratama', kelas: '9A', jabatan: 'Ketua MPK', komisi: 'Pengurus Inti', foto: '', motto: 'Berani bicara, bertanggung jawab!' },
     { id: 2, nama: 'Salsabila Putri', kelas: '9B', jabatan: 'Wakil Ketua', komisi: 'Pengurus Inti', foto: '', motto: 'Suara siswa adalah suaraku.' },
@@ -399,26 +406,38 @@
           body: JSON.stringify({ username: username, password: password })
         })
           .then(function (res) {
-            if (res.status === 200) return res.json();
-            return res.json().then(function (data) {
-              throw new Error(data.detail || 'Login gagal');
-            });
+            if (!res.ok) {
+              return res.json().then(function (data) {
+                var apiError = new Error(data.detail || 'Terjadi kesalahan pada server/database.');
+                apiError.isApiError = true;
+                throw apiError;
+              });
+            }
+            return res.json();
           })
           .then(function (data) {
             localStorage.setItem('mpk_token', data.token);
             window.location.href = '/dashboard.html';
           })
           .catch(function (err) {
+            var message = (err && err.isApiError)
+              ? 'Login Gagal: ' + err.message
+              : 'Gagal terhubung ke server. Pastikan database/API aktif.';
+            alert(message);
+            console.error(err);
             errorBox.classList.remove('hidden');
-            errorText.textContent = err.message || 'Username atau password salah.';
+            errorText.textContent = message;
           })
           .finally(function () {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> Masuk';
           });
       } catch (err) {
+        var message = 'Gagal terhubung ke server. Pastikan database/API aktif.';
+        alert(message);
+        console.error(err);
         errorBox.classList.remove('hidden');
-        errorText.textContent = 'Terjadi kesalahan. Coba lagi.';
+        errorText.textContent = message;
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fa-solid fa-unlock"></i> Masuk';
       }
@@ -426,10 +445,6 @@
   }
 
   function initDashboardPage() {
-    if (!getToken()) {
-      window.location.href = '/portal-rahasia.html';
-      return;
-    }
     initTabs();
     bindAdminForms();
     loadAspirasiAdmin();
